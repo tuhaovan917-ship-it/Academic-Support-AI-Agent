@@ -1,142 +1,143 @@
 # Academic Support AI Agent
 
-Dự án này xây dựng pipeline Retrieval-Augmented Generation (RAG) cho trợ lý học vụ HCMUT. Ở giai đoạn hiện tại, project tập trung vào việc xử lý dữ liệu từ **Sổ tay sinh viên** và **FAQ**, đưa dữ liệu vào **Chroma vector database**, rồi kiểm tra khả năng truy hồi thông tin.
+Dự án này triển khai **Task 1.2: Tiền xử lý và Vector hóa** cho dữ liệu sổ tay sinh viên HCMUT/NTTU.
 
-## Cấu trúc thư mục
+Mục tiêu của Task 1.2:
+
+- bóc tách text từ PDF;
+- giữ cấu trúc điều khoản/mục khi chunking để LLM không trả lời sai luật;
+- enrich metadata đủ dùng cho truy hồi;
+- vector hóa dữ liệu và lưu vào ChromaDB local.
+
+## Cấu trúc chính
 
 ```text
 AIAgentHocVu/
 ├── data/
 │   ├── SỔ TAY SV - Bách Khoa - NĂM HỌC 2025-2026.pdf
-│   └── faq_hcmut.jsonl
-├── chroma_db/
+│   ├── Sổ tay sinh viên Nguyễn Tất Thành.pdf
+│   ├── faq_hcmut.jsonl
+│   └── faq_nttu.jsonl
 ├── src/
-│   ├── __init__.py
 │   ├── data_processor.py
 │   └── retriever.py
+├── scripts/
+│   └── audit_vector_db.py
 ├── tests/
 │   └── test_retrieval.py
 ├── main.py
-├── requirements.txt
-└── thu_nghiem.ipynb
+└── requirements.txt
 ```
 
-## Vai trò từng phần
+Các thư mục sinh tự động và không commit:
 
-- `data/`: chứa dữ liệu gốc, gồm PDF sổ tay sinh viên và file FAQ dạng JSONL.
-- `src/data_processor.py`: đọc PDF/FAQ, chia nhỏ tài liệu thành chunks, gắn metadata.
-- `src/retriever.py`: tạo Chroma DB, load Chroma DB, và chạy similarity search.
-- `main.py`: script chính để build lại vector database.
-- `tests/test_retrieval.py`: script test retrieval nhanh bằng một câu hỏi mẫu hoặc câu hỏi tự nhập.
-- `thu_nghiem.ipynb`: notebook nháp, chỉ nên dùng để gọi lại các hàm trong `src/`.
-- `chroma_db/`: database vector được sinh ra sau khi chạy build. Thư mục này không nên commit lên Git.
+- `data/processed/`: text cache sau khi bóc PDF.
+- `hcmut_nttu_db/`: ChromaDB local.
+- `chroma_db/`: DB thử nghiệm cũ, không còn dùng.
 
-## Luồng hoạt động
+## Pipeline Task 1.2
 
-1. `main.py` gọi `prepare_data()` trong `src/data_processor.py`.
-2. `prepare_data()` đọc PDF bằng `UnstructuredPDFLoader`.
-3. Nếu có `faq_hcmut.jsonl`, FAQ cũng được chuyển thành `Document`.
-4. Toàn bộ tài liệu được chia chunk bằng `RecursiveCharacterTextSplitter`.
-5. Mỗi chunk được gắn metadata như `source_name`, `page_number`, `category`, `chunk_id`.
-6. `setup_vector_db()` trong `src/retriever.py` embedding các chunks bằng model `intfloat/multilingual-e5-base`.
-7. Chunks sau khi embedding được lưu vào `chroma_db/`.
-8. Khi test, `tests/test_retrieval.py` load lại `chroma_db/` và tìm các đoạn liên quan nhất với câu hỏi.
+Pipeline hiện tại không phụ thuộc hoàn toàn vào Markdown heading nữa, vì PDF thật sinh heading khá nhiễu. Thay vào đó, project dùng rule-based legal chunking:
 
-## Cài đặt môi trường
+```text
+PDF
+-> unstructured hi_res
+-> text sạch + giữ bảng dạng Markdown table nếu có
+-> bỏ mục lục/header/footer/số trang rác
+-> chunk theo PHẦN / CHƯƠNG / MỤC / Điều / 1.1 / 1.1.1
+-> tách phụ nếu chunk quá dài
+-> enrich metadata
+-> embedding BAAI/bge-m3 bằng GPU nếu có
+-> ChromaDB local
+```
 
-Nếu dùng virtualenv đã có trong project:
+Metadata mỗi chunk:
+
+- `school`: `HCMUT` hoặc `NTTU`.
+- `source`: tên file PDF/FAQ gốc.
+- `category`: nhóm nội dung như `diem_ren_luyen`, `hoc_phi_hoc_bong`, `hoc_vu`.
+- `section_heading`: tiêu đề gần nhất của chunk.
+- `hierarchy_path`: đường dẫn cấu trúc cha.
+- `chunk_type`: `part`, `section`, `article`, `numbered`, `topic`, `faq`, ...
+- `chunk_id`: mã chunk.
+
+## GPU và HuggingFace
+
+Project đọc token từ `.env` local. File này đã nằm trong `.gitignore`.
+
+PyTorch CUDA hiện đã được cài trong `venv`:
+
+```text
+torch 2.11.0+cu128
+GPU: NVIDIA GeForce RTX 5050 Laptop GPU
+```
+
+Kiểm tra GPU:
 
 ```powershell
-.\venv\Scripts\python.exe -m pip install -r requirements.txt
+.\venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
 ```
 
-Nếu đang kích hoạt sẵn môi trường Python khác:
+## Chạy build lại từ đầu
+
+Nên chạy bằng PowerShell tại thư mục project:
 
 ```powershell
-pip install -r requirements.txt
+chcp 65001
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
+$env:EMBEDDING_DEVICE="cuda"
+.\venv\Scripts\python.exe main.py --reset --force-markdown
 ```
 
-## Khi nào cần build lại từ đầu?
+Ý nghĩa:
 
-Bạn nên build lại Chroma DB khi:
+- `--reset`: xóa `hcmut_nttu_db/` cũ trước khi tạo lại.
+- `--force-markdown`: ép bóc PDF lại, không dùng cache trong `data/processed/`.
+- `EMBEDDING_DEVICE=cuda`: ép embedding chạy GPU.
 
-- sửa logic trong `src/data_processor.py`;
-- đổi `chunk_size`, `chunk_overlap`, hoặc `separators`;
-- thêm/sửa file PDF hoặc FAQ;
-- đổi embedding model;
-- thấy kết quả retrieval bị lẫn dữ liệu cũ hoặc trùng lặp.
-
-Vì bạn vừa sửa `data_processor.py`, nên **nên chạy lại từ đầu**.
-
-## Có cần xóa `chroma_db/` không?
-
-Có, trong trường hợp này nên xóa hoặc reset `chroma_db/` trước khi build lại. Lý do là Chroma DB cũ đang được tạo từ cấu hình chunking cũ. Nếu build chồng lên DB cũ, dữ liệu có thể bị trùng hoặc retrieval trả về kết quả lẫn giữa cấu hình cũ và mới.
-
-Bạn không cần xóa thủ công. Hãy dùng flag `--reset`:
+Nếu chỉ muốn xử lý một trường:
 
 ```powershell
-.\venv\Scripts\python.exe main.py --reset
+.\venv\Scripts\python.exe main.py --reset --force-markdown --pdf "data\SỔ TAY SV - Bách Khoa - NĂM HỌC 2025-2026.pdf"
 ```
 
-Lệnh này sẽ xóa `chroma_db/` cũ rồi tạo lại database mới từ dữ liệu trong `data/`.
+## Audit chất lượng DB
 
-## Build lại Chroma DB
-
-Chạy bản đầy đủ, gồm cả PDF và FAQ:
+Sau khi build xong, kiểm tra số lượng chunk và keyword:
 
 ```powershell
-.\venv\Scripts\python.exe main.py --reset
+.\venv\Scripts\python.exe scripts\audit_vector_db.py --keyword "rèn luyện"
 ```
 
-Nếu chỉ muốn index PDF, không đưa FAQ vào DB:
+Lọc riêng HCMUT:
 
 ```powershell
-.\venv\Scripts\python.exe main.py --reset --no-faq
+.\venv\Scripts\python.exe scripts\audit_vector_db.py --keyword "rèn luyện" --school HCMUT
 ```
 
-Nếu muốn thử thông số chunking khác:
+Kỳ vọng tốt:
 
-```powershell
-.\venv\Scripts\python.exe main.py --reset --chunk-size 800 --chunk-overlap 150
-```
+- Tổng số chunks phải lớn hơn nhiều so với bản lỗi cũ 18 chunks.
+- `Chunks thuộc MỤC LỤC` nên bằng 0.
+- Keyword `rèn luyện` phải có chunk category `diem_ren_luyen`.
+- Không có quá nhiều chunk dài hơn 2600 ký tự.
 
 ## Test retrieval
 
-Chạy câu hỏi mặc định:
+Hybrid search là mặc định, kết hợp BM25 + Chroma vector search:
 
 ```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py
+.\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --school HCMUT --k 5
 ```
 
-Test bằng câu hỏi riêng:
+So sánh với vector search thuần:
 
 ```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --k 5
+.\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --school HCMUT --k 5 --vector-only
 ```
-
-Ví dụ khác:
-
-```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py --query "Sinh viên năm nhất có cần tự đăng ký môn học không?" --k 3
-```
-
-## Cách đánh giá kết quả retrieval
-
-Kết quả tốt khi:
-
-- đoạn trả về có liên quan trực tiếp tới câu hỏi;
-- nếu hỏi về quy định, đoạn trả về nên bám sát điều/khoản/trang trong sổ tay;
-- nếu hỏi câu phổ biến đã có trong FAQ, kết quả nên ưu tiên hoặc ít nhất có xuất hiện nội dung từ `faq_hcmut`;
-- các đoạn không bị quá dài, quá vụn, hoặc lạc chủ đề.
-
-Nếu kết quả bị lệch, hãy tinh chỉnh trong `src/data_processor.py`:
-
-- giảm `chunk_size` nếu đoạn trả về quá lan man;
-- tăng `chunk_overlap` nếu câu trả lời bị thiếu ngữ cảnh;
-- chỉnh `separators` nếu chunk bị cắt giữa Điều/Khoản quan trọng.
 
 ## Ghi chú
 
-- Lần đầu chạy embedding model có thể mất thời gian vì cần load model từ Hugging Face cache.
-- Nếu thấy cảnh báo `HF_TOKEN`, đó chỉ là cảnh báo rate limit. Có token thì tải model ổn định hơn, nhưng không bắt buộc nếu model đã có cache.
-- `chroma_db/` là dữ liệu sinh ra tự động, đã được thêm vào `.gitignore`.
+- GPU giúp embedding nhanh hơn, nhưng độ chính xác phụ thuộc chủ yếu vào chunking và metadata.
+- Mục lục không được index vào Vector DB vì dễ gây nhiễu retrieval.
+- FAQ JSONL được đưa vào DB như các chunk riêng để tăng khả năng trả lời các câu hỏi phổ biến.
