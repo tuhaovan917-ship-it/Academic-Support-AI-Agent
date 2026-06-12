@@ -1,0 +1,13 @@
+chromadb
+beautifulsoup4
+langchain
+langchain-chroma
+langchain-community
+langchain-core
+langchain-huggingface
+langchain-text-splitters
+python-dotenv
+rank-bm25
+sentence-transformers
+tqdm
+unstructured[pdf]

@@ -3,3 +3,6 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
+chroma_db/
+hcmut_nttu_db/
+data/processed/
