@@ -1,4 +1,4 @@
-﻿venv/
+venv/
 __pycache__/
 *.pyc
 .env
@@ -6,3 +6,27 @@ __pycache__/
 chroma_db/
 hcmut_nttu_db/
 data/processed/
+data/raw/
+node_modules/
+dist/
+.angular/
+.npm-cache/
+bin/
+obj/
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Operating System Files
+Thumbs.db
+Desktop.ini

@@ -1,0 +1,29 @@
+{
+  "name": "academic-support-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "ng serve --host 127.0.0.1 --port 4200",
+    "build": "ng build",
+    "watch": "ng build --watch --configuration development"
+  },
+  "dependencies": {
+    "@angular/animations": "15.2.10",
+    "@angular/common": "15.2.10",
+    "@angular/compiler": "15.2.10",
+    "@angular/core": "15.2.10",
+    "@angular/forms": "15.2.10",
+    "@angular/platform-browser": "15.2.10",
+    "@angular/platform-browser-dynamic": "15.2.10",
+    "@angular/router": "15.2.10",
+    "rxjs": "7.8.1",
+    "tslib": "2.6.2",
+    "zone.js": "0.12.0"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "15.2.11",
+    "@angular/cli": "15.2.11",
+    "@angular/compiler-cli": "15.2.10",
+    "typescript": "4.9.5"
+  }
+}
