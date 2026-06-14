@@ -6,4 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="AcademicSupport.Api\**\*.cs" />
+    <Content Remove="AcademicSupport.Api\**" />
+    <EmbeddedResource Remove="AcademicSupport.Api\**" />
+    <None Remove="AcademicSupport.Api\**" />
+  </ItemGroup>
+
 </Project>
