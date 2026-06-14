@@ -10,11 +10,11 @@ from typing import Iterable
 from bs4 import BeautifulSoup
 from langchain_core.documents import Document
 from tqdm import tqdm
-from unstructured.partition.pdf import partition_pdf
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = PROJECT_ROOT / "data"
+RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 
 MIN_CHUNK_CHARS = 80
@@ -22,6 +22,30 @@ MAX_CHUNK_CHARS = 2600
 OVERLAP_CHARS = 220
 
 CATEGORY_FALLBACK_KEYWORDS = {
+    "chuan_ngoai_ngu": [
+        "chuẩn đầu ra ngoại ngữ",
+        "chuẩn ngoại ngữ",
+        "ngoại ngữ thứ nhất",
+        "ngoại ngữ thứ hai",
+        "miễn học ngoại ngữ",
+        "miễn thi ngoại ngữ",
+    ],
+    "chuan_cntt": [
+        "chuẩn kỹ năng sử dụng công nghệ thông tin",
+        "chuẩn công nghệ thông tin",
+        "chứng chỉ ứng dụng công nghệ thông tin",
+        "kỹ năng sử dụng công nghệ thông tin",
+        "tin học",
+        "cntt",
+    ],
+    "cong_tac_sinh_vien": [
+        "quy chế công tác sinh viên",
+        "công tác sinh viên",
+        "khen thưởng sinh viên",
+        "kỷ luật sinh viên",
+        "quyền của sinh viên",
+        "nghĩa vụ của sinh viên",
+    ],
     "diem_ren_luyen": [
         "điểm rèn luyện",
         "rèn luyện sinh viên",
@@ -132,8 +156,32 @@ def list_pdf_paths(data_dir: str | Path = DATA_DIR) -> list[Path]:
     return sorted(Path(data_dir).glob("*.pdf"))
 
 
-def get_school_from_pdf_name(pdf_path: str | Path) -> str:
-    name = Path(pdf_path).name.casefold()
+def list_knowledge_source_paths(data_dir: str | Path = DATA_DIR) -> list[Path]:
+    """List source files for indexing.
+
+    For folders like data/raw/HUIT, PDFs are the primary sources. If a PDF has a
+    sibling *_extracted.txt file, that text file is used as cache later. Standalone
+    .txt files are also included, but extracted text caches are not indexed twice.
+    """
+    data_dir = Path(data_dir)
+    pdf_paths = sorted(data_dir.glob("*.pdf"))
+    standalone_text_paths = sorted(
+        path
+        for path in data_dir.glob("*.txt")
+        if not path.stem.endswith("_extracted")
+    )
+    return [*pdf_paths, *standalone_text_paths]
+
+
+def get_school_from_source_path(source_path: str | Path) -> str:
+    source_path = Path(source_path)
+    name = source_path.name.casefold()
+    parent_name = source_path.parent.name.casefold()
+
+    if "huit" in name or parent_name == "huit":
+        return "HUIT"
+    if "công thương" in name or "cong thuong" in name:
+        return "HUIT"
     if "hcmut" in name or "bách khoa" in name or "bach khoa" in name:
         return "HCMUT"
     if "nttu" in name or "nguyễn tất thành" in name or "nguyen tat thanh" in name:
@@ -141,9 +189,18 @@ def get_school_from_pdf_name(pdf_path: str | Path) -> str:
     return "UNKNOWN"
 
 
+def get_school_from_pdf_name(pdf_path: str | Path) -> str:
+    return get_school_from_source_path(pdf_path)
+
+
 def get_faq_path_for_school(school: str) -> Path | None:
-    faq_path = DATA_DIR / f"faq_{school.lower()}.jsonl"
-    return faq_path if faq_path.exists() else None
+    school = school.lower()
+    candidates = [
+        RAW_DIR / school.upper() / f"faq_{school}.jsonl",
+        RAW_DIR / school / f"faq_{school}.jsonl",
+        DATA_DIR / f"faq_{school}.jsonl",
+    ]
+    return next((path for path in candidates if path.exists()), None)
 
 
 def _normalize_text(text: str) -> str:
@@ -191,6 +248,14 @@ def _category_keywords_from_faq(faq_path_text: str | None) -> dict[str, set[str]
 def map_category(chunk_text: str, faq_path: str | Path | None = None) -> str:
     normalized_text = _normalize_text(chunk_text)
 
+    if "ngoại ngữ" in normalized_text and ("chuẩn" in normalized_text or "miễn học" in normalized_text):
+        return "chuan_ngoai_ngu"
+    if (
+        "công nghệ thông tin" in normalized_text or "cntt" in normalized_text or "tin học" in normalized_text
+    ) and ("chuẩn" in normalized_text or "chứng chỉ" in normalized_text or "kỹ năng" in normalized_text):
+        return "chuan_cntt"
+    if "công tác sinh viên" in normalized_text or "quy chế công tác sinh viên" in normalized_text:
+        return "cong_tac_sinh_vien"
     if "điểm rèn luyện" in normalized_text or "rèn luyện sinh viên" in normalized_text:
         return "diem_ren_luyen"
 
@@ -242,6 +307,20 @@ def _element_to_text(element: object) -> str:
     return text
 
 
+def _pdf_to_text_with_pypdf(pdf_path: Path, text_path: Path) -> Path:
+    from pypdf import PdfReader
+
+    reader = PdfReader(str(pdf_path))
+    pages = []
+    for page_index, page in enumerate(reader.pages, start=1):
+        page_text = page.extract_text() or ""
+        if page_text.strip():
+            pages.append(f"--- PAGE {page_index} ---\n{page_text.strip()}")
+
+    text_path.write_text("\n\n".join(pages), encoding="utf-8")
+    return text_path
+
+
 def pdf_to_text(
     pdf_path: str | Path,
     output_dir: str | Path = PROCESSED_DIR,
@@ -255,15 +334,45 @@ def pdf_to_text(
     if text_path.exists() and not force:
         return text_path
 
-    elements = partition_pdf(
-        filename=str(pdf_path),
-        strategy="hi_res",
-        infer_table_structure=True,
-        languages=["vie"],
-    )
-    blocks = [_element_to_text(element) for element in elements]
-    text_path.write_text("\n\n".join(block for block in blocks if block), encoding="utf-8")
-    return text_path
+    try:
+        from unstructured.partition.pdf import partition_pdf
+
+        elements = partition_pdf(
+            filename=str(pdf_path),
+            strategy="hi_res",
+            infer_table_structure=True,
+            languages=["vie"],
+        )
+        blocks = [_element_to_text(element) for element in elements]
+        text_path.write_text("\n\n".join(block for block in blocks if block), encoding="utf-8")
+        return text_path
+    except ModuleNotFoundError:
+        return _pdf_to_text_with_pypdf(pdf_path, text_path)
+
+
+def source_to_text_path(
+    source_path: str | Path,
+    output_dir: str | Path = PROCESSED_DIR,
+    force_pdf_extract: bool = False,
+) -> Path:
+    source_path = Path(source_path)
+    if source_path.suffix.casefold() == ".txt":
+        return source_path
+
+    if source_path.suffix.casefold() != ".pdf":
+        raise ValueError(f"Không hỗ trợ định dạng nguồn: {source_path}")
+
+    extracted_text_path = source_path.with_name(f"{source_path.stem}_extracted.txt")
+    if (
+        extracted_text_path.exists()
+        and not force_pdf_extract
+        and len("".join(extracted_text_path.read_text(encoding="utf-8").split())) >= MIN_CHUNK_CHARS
+    ):
+        return extracted_text_path
+
+    school = get_school_from_source_path(source_path)
+    school_output_dir = Path(output_dir) / school.lower()
+    return pdf_to_text(source_path, output_dir=school_output_dir, force=force_pdf_extract)
 
 
 def _is_toc_line(line: str) -> bool:
@@ -356,6 +465,14 @@ def detect_heading(line: str, school: str) -> Heading | None:
         "thông tin về điểm rèn luyện",
         "công tác sinh viên",
         "công tác đào tạo",
+        "quy chế đào tạo",
+        "đăng ký học phần",
+        "kết quả học tập",
+        "tạm dừng học tập",
+        "chuyển ngành",
+        "cảnh báo học vụ",
+        "buộc thôi học",
+        "chuẩn đầu ra",
         "học phí",
         "học bổng",
         "bảo hiểm y tế",
@@ -368,7 +485,7 @@ def detect_heading(line: str, school: str) -> Heading | None:
     uppercase_letters = re.findall(r"[A-ZÀ-ỸĐ]", line)
     letters = re.findall(r"[A-Za-zÀ-ỹĐđ]", line)
     if (
-        school == "HCMUT"
+        school in {"HCMUT", "HUIT"}
         and letters
         and len(line) <= 90
         and len(uppercase_letters) / max(len(letters), 1) > 0.75
@@ -511,11 +628,12 @@ def load_faq_documents(faq_path: str | Path) -> list[Document]:
 
 def enrich_chunks(
     chunks: Iterable[Document],
-    pdf_path: str | Path,
+    source_path: str | Path,
     faq_path: str | Path | None,
 ) -> list[Document]:
-    pdf_path = Path(pdf_path)
-    school = get_school_from_pdf_name(pdf_path)
+    source_path = Path(source_path)
+    school = get_school_from_source_path(source_path)
+    source_slug = re.sub(r"[^a-z0-9]+", "_", source_path.stem.casefold()).strip("_")
     enriched_chunks: list[Document] = []
 
     for index, chunk in enumerate(chunks):
@@ -524,8 +642,8 @@ def enrich_chunks(
             {
                 "school": school,
                 "category": map_category(chunk.page_content, faq_path),
-                "source": pdf_path.name,
-                "chunk_id": f"{school.lower()}_{index:05d}",
+                "source": source_path.name,
+                "chunk_id": f"{school.lower()}_{source_slug}_{index:05d}",
             }
         )
         enriched_chunks.append(Document(page_content=chunk.page_content, metadata=metadata))
@@ -534,34 +652,41 @@ def enrich_chunks(
 
 def prepare_data(
     pdf_paths: Iterable[str | Path] | None = None,
+    source_paths: Iterable[str | Path] | None = None,
+    data_dir: str | Path = DATA_DIR,
     force_markdown: bool = False,
     include_faq: bool = True,
 ) -> list[Document]:
-    """Task 1.2 pipeline: PDF -> clean legal chunks -> metadata -> vector-ready docs."""
+    """Task 1.2 pipeline: source files -> clean legal chunks -> metadata -> vector-ready docs."""
     print("--- Bắt đầu xử lý dữ liệu Task 1.2 ---")
 
-    paths = [Path(path) for path in pdf_paths] if pdf_paths else list_pdf_paths()
+    if source_paths is not None:
+        paths = [Path(path) for path in source_paths]
+    elif pdf_paths is not None:
+        paths = [Path(path) for path in pdf_paths]
+    else:
+        paths = list_knowledge_source_paths(data_dir)
     if not paths:
-        raise FileNotFoundError(f"Không tìm thấy file PDF trong {DATA_DIR}")
+        raise FileNotFoundError(f"Không tìm thấy PDF/TXT nguồn trong {Path(data_dir)}")
 
     all_chunks: list[Document] = []
-    for pdf_path in tqdm(paths, desc="Xử lý PDF"):
-        school = get_school_from_pdf_name(pdf_path)
+    for source_path in tqdm(paths, desc="Xử lý nguồn"):
+        school = get_school_from_source_path(source_path)
         faq_path = get_faq_path_for_school(school)
 
-        text_path = pdf_to_text(pdf_path, force=force_markdown)
+        text_path = source_to_text_path(source_path, force_pdf_extract=force_markdown)
         text = text_path.read_text(encoding="utf-8")
         legal_chunks = legal_chunk_text(text, school=school)
-        enriched_chunks = enrich_chunks(legal_chunks, pdf_path, faq_path)
+        enriched_chunks = enrich_chunks(legal_chunks, source_path, faq_path)
         all_chunks.extend(enriched_chunks)
 
         print(
-            f"{pdf_path.name}: {len(enriched_chunks)} chunks, "
-            f"school={school}, faq={faq_path.name if faq_path else 'khong co'}"
+            f"{source_path.name}: {len(enriched_chunks)} chunks, "
+            f"text={text_path.name}, school={school}, faq={faq_path.name if faq_path else 'khong co'}"
         )
 
     if include_faq:
-        for school in sorted({get_school_from_pdf_name(path) for path in paths}):
+        for school in sorted({get_school_from_source_path(path) for path in paths}):
             faq_path = get_faq_path_for_school(school)
             if faq_path:
                 faq_docs = load_faq_documents(faq_path)

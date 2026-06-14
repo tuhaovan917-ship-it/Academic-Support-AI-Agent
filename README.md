@@ -136,6 +136,45 @@ So sánh với vector search thuần:
 .\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --school HCMUT --k 5 --vector-only
 ```
 
+## Chạy Task 1.2 với dữ liệu HUIT
+
+Dữ liệu HUIT đặt tại `data/raw/HUIT/`. Pipeline sẽ:
+
+- đọc các PDF trong thư mục HUIT;
+- ưu tiên dùng file `_extracted.txt` cùng tên nếu đã có;
+- nếu `_extracted.txt` rỗng, thử fallback bóc text bằng `pypdf` và cache vào `data/processed/huit/`;
+- nạp `faq_huit.jsonl`;
+- lưu Chroma DB riêng tại `data/huit_db/`.
+
+Build lại DB HUIT:
+
+```powershell
+chcp 65001
+$env:PYTHONIOENCODING="utf-8"
+$env:EMBEDDING_DEVICE="cpu"
+.\venv\Scripts\python.exe main.py --school HUIT --reset
+```
+
+Nếu 3 PDF scan của HUIT bị rỗng text, chạy OCR trước:
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+.\venv\Scripts\python.exe scripts\ocr_huit_pdfs.py --scale 2
+.\venv\Scripts\python.exe main.py --school HUIT --reset
+```
+
+Audit nhanh DB HUIT:
+
+```powershell
+.\venv\Scripts\python.exe scripts\audit_vector_db.py --school HUIT --keyword "cảnh báo học vụ" --limit 3
+```
+
+Test retrieval HUIT:
+
+```powershell
+.\venv\Scripts\python.exe tests\test_retrieval.py --school HUIT --query "Sinh viên bị cảnh báo học vụ mấy lần thì bị buộc thôi học?" --k 3
+```
+
 ## Ghi chú
 
 - GPU giúp embedding nhanh hơn, nhưng độ chính xác phụ thuộc chủ yếu vào chunking và metadata.

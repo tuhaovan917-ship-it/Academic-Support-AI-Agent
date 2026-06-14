@@ -32,6 +32,16 @@ app.MapGet("/api/health", () => Results.Ok(new
     timestamp = DateTimeOffset.UtcNow
 }));
 
+app.MapGet("/api/config/database", (IConfiguration configuration) =>
+{
+    var connectionString = configuration.GetConnectionString("AcademicSupportDb");
+    return Results.Ok(new
+    {
+        name = "AcademicSupportDb",
+        configured = !string.IsNullOrWhiteSpace(connectionString)
+    });
+});
+
 app.MapGet("/api/students", (MockAcademicStore store) =>
     Results.Ok(store.GetStudents()));
 
@@ -39,7 +49,7 @@ app.MapGet("/api/students/{studentId}", (string studentId, MockAcademicStore sto
 {
     var student = store.GetStudent(studentId);
     return student is null
-        ? Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."))
+        ? Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."))
         : Results.Ok(student);
 });
 
@@ -47,7 +57,7 @@ app.MapGet("/api/students/{studentId}/schedule", (string studentId, MockAcademic
 {
     if (store.GetStudent(studentId) is null)
     {
-        return Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."));
+        return Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."));
     }
 
     return Results.Ok(store.GetSchedule(studentId));
@@ -57,7 +67,7 @@ app.MapGet("/api/students/{studentId}/grades", (string studentId, MockAcademicSt
 {
     if (store.GetStudent(studentId) is null)
     {
-        return Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."));
+        return Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."));
     }
 
     return Results.Ok(store.GetGrades(studentId));
@@ -67,7 +77,7 @@ app.MapGet("/api/students/{studentId}/academic-summary", (string studentId, Mock
 {
     var summary = store.GetAcademicSummary(studentId);
     return summary is null
-        ? Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."))
+        ? Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."))
         : Results.Ok(summary);
 });
 
@@ -75,7 +85,7 @@ app.MapPost("/api/chat/sessions", (CreateSessionRequest request, MockAcademicSto
 {
     if (store.GetStudent(request.StudentId) is null)
     {
-        return Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."));
+        return Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."));
     }
 
     return Results.Created(
@@ -93,12 +103,12 @@ app.MapPost("/api/chat", (ChatRequest request, MockAcademicStore store, MockChat
 {
     if (string.IsNullOrWhiteSpace(request.Message))
     {
-        return Results.BadRequest(new ApiError("empty_message", "Noi dung cau hoi khong duoc de trong."));
+        return Results.BadRequest(new ApiError("empty_message", "Nội dung câu hỏi không được để trống."));
     }
 
     if (store.GetStudent(request.StudentId) is null)
     {
-        return Results.NotFound(new ApiError("student_not_found", "Khong tim thay sinh vien."));
+        return Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."));
     }
 
     var response = chatService.Answer(request);

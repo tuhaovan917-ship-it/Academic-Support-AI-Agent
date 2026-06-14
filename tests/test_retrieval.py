@@ -11,7 +11,7 @@ if str(PROJECT_ROOT) not in sys.path:
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from src.retriever import hybrid_search, vector_search
+from src.retriever import DEFAULT_CHROMA_DIR, hybrid_search, vector_search
 
 
 DEFAULT_QUERY = "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?"
@@ -22,9 +22,10 @@ def run_retrieval_test(
     k: int = 5,
     vector_only: bool = False,
     school: str | None = None,
+    persist_directory: str | Path = DEFAULT_CHROMA_DIR,
 ) -> None:
     search_fn = vector_search if vector_only else hybrid_search
-    results = search_fn(query, k=k, school=school)
+    results = search_fn(query, k=k, school=school, persist_directory=persist_directory)
     search_mode = "Vector only" if vector_only else "Hybrid BM25 + Vector"
 
     print(f"Câu hỏi: {query}\n")
@@ -53,16 +54,21 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Test retrieval từ Chroma DB.")
     parser.add_argument("--query", default=DEFAULT_QUERY, help="Câu hỏi dùng để test retrieval.")
     parser.add_argument("--k", type=int, default=5, help="Số đoạn cần lấy ra.")
-    parser.add_argument("--school", choices=["HCMUT", "NTTU"], help="Lọc kết quả theo trường.")
+    parser.add_argument("--school", choices=["HCMUT", "NTTU", "HUIT"], help="Lọc kết quả theo trường.")
+    parser.add_argument("--persist-dir", type=Path, default=None, help="Thư mục Chroma DB cần test.")
     parser.add_argument(
         "--vector-only",
         action="store_true",
         help="Chỉ dùng Chroma similarity_search, không dùng hybrid search.",
     )
     args = parser.parse_args()
+    persist_dir = args.persist_dir
+    if persist_dir is None and args.school == "HUIT":
+        persist_dir = PROJECT_ROOT / "data" / "huit_db"
     run_retrieval_test(
         query=args.query,
         k=args.k,
         vector_only=args.vector_only,
         school=args.school,
+        persist_directory=persist_dir or DEFAULT_CHROMA_DIR,
     )

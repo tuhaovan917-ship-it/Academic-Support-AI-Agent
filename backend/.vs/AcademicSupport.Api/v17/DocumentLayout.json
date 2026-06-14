@@ -3,16 +3,28 @@
   "WorkspaceRootPath": "D:\\Intern-Projects\\ChatBotUni\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\services\\mockacademicstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\services\\mockacademicstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\models\\academicmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\models\\academicmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\academicsupport.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}",
       "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\academicsupport.api.http||{5703B403-55E7-4C63-8C88-A8F52C7A45C5}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -31,6 +43,45 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "MockAcademicStore.cs",
+              "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Services\\MockAcademicStore.cs",
+              "RelativeDocumentMoniker": "AcademicSupport.Api\\Services\\MockAcademicStore.cs",
+              "ToolTip": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Services\\MockAcademicStore.cs",
+              "RelativeToolTip": "AcademicSupport.Api\\Services\\MockAcademicStore.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-14T08:10:47.5Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "AcademicModels.cs",
+              "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Models\\AcademicModels.cs",
+              "RelativeDocumentMoniker": "AcademicSupport.Api\\Models\\AcademicModels.cs",
+              "ToolTip": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Models\\AcademicModels.cs",
+              "RelativeToolTip": "AcademicSupport.Api\\Models\\AcademicModels.cs",
+              "ViewState": "AQIAAA8AAAAAAAAAAAAYwAAAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-06-14T08:10:43.57Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "appsettings.Development.json",
+              "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\appsettings.Development.json",
+              "RelativeDocumentMoniker": "AcademicSupport.Api\\appsettings.Development.json",
+              "ToolTip": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\appsettings.Development.json",
+              "RelativeToolTip": "AcademicSupport.Api\\appsettings.Development.json",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-06-14T04:05:36.181Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "AcademicSupport.Api.http",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\AcademicSupport.Api.http",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\AcademicSupport.Api.http",
@@ -43,7 +94,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 5,
               "Title": "appsettings.json",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\appsettings.json",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\appsettings.json",
@@ -56,7 +107,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 6,
               "Title": ".NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",

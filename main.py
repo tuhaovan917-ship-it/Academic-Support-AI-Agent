@@ -9,8 +9,8 @@ from dotenv import load_dotenv
 PROJECT_ROOT = Path(__file__).resolve().parent
 load_dotenv(PROJECT_ROOT / ".env")
 
-from src.data_processor import prepare_data
-from src.retriever import setup_vector_db
+from src.data_processor import DATA_DIR, RAW_DIR, prepare_data
+from src.retriever import DEFAULT_CHROMA_DIR, setup_vector_db
 
 
 if hasattr(sys.stdout, "reconfigure"):
@@ -38,17 +38,44 @@ def main() -> None:
         "--pdf",
         action="append",
         type=Path,
-        help="Đường dẫn PDF cần xử lý. Có thể truyền nhiều lần. Mặc định: tất cả PDF trong data/.",
+        help="Đường dẫn PDF/TXT cần xử lý. Có thể truyền nhiều lần.",
+    )
+    parser.add_argument(
+        "--school",
+        choices=["HCMUT", "NTTU", "HUIT"],
+        help="Xử lý dữ liệu theo trường. Với HUIT sẽ đọc mặc định từ data/raw/HUIT.",
+    )
+    parser.add_argument(
+        "--data-dir",
+        type=Path,
+        help="Thư mục chứa PDF/TXT nguồn. Ghi đè mặc định theo --school.",
+    )
+    parser.add_argument(
+        "--persist-dir",
+        type=Path,
+        help="Thư mục lưu Chroma DB. Mặc định: data/huit_db khi --school HUIT, còn lại hcmut_nttu_db.",
     )
     args = parser.parse_args()
 
+    data_dir = args.data_dir
+    if data_dir is None and args.school == "HUIT":
+        data_dir = RAW_DIR / "HUIT"
+    if data_dir is None:
+        data_dir = DATA_DIR
+
+    persist_dir = args.persist_dir
+    if persist_dir is None and args.school == "HUIT":
+        persist_dir = DATA_DIR / "huit_db"
+
     chunks = prepare_data(
-        pdf_paths=args.pdf,
+        source_paths=args.pdf,
+        data_dir=data_dir,
         force_markdown=args.force_markdown,
         include_faq=not args.no_faq,
     )
-    setup_vector_db(chunks, reset=args.reset)
-    print("Đã tạo/lưu Chroma DB vào thư mục hcmut_nttu_db.")
+    persist_path = persist_dir or DEFAULT_CHROMA_DIR
+    setup_vector_db(chunks, persist_directory=persist_path, reset=args.reset)
+    print(f"Đã tạo/lưu Chroma DB vào thư mục {persist_path}.")
 
 
 if __name__ == "__main__":

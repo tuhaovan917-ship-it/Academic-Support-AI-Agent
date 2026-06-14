@@ -12,7 +12,7 @@ if str(PROJECT_ROOT) not in sys.path:
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-from src.retriever import load_documents_from_vector_db
+from src.retriever import DEFAULT_CHROMA_DIR, load_documents_from_vector_db
 
 
 def _filter_by_school(documents, school: str | None):
@@ -22,8 +22,13 @@ def _filter_by_school(documents, school: str | None):
     return [doc for doc in documents if doc.metadata.get("school", "").upper() == school]
 
 
-def audit_keyword(keyword: str = "rèn luyện", limit: int = 20, school: str | None = None) -> None:
-    documents = _filter_by_school(load_documents_from_vector_db(), school)
+def audit_keyword(
+    keyword: str = "rèn luyện",
+    limit: int = 20,
+    school: str | None = None,
+    persist_directory: str | Path = DEFAULT_CHROMA_DIR,
+) -> None:
+    documents = _filter_by_school(load_documents_from_vector_db(persist_directory=persist_directory), school)
     keyword_lower = keyword.casefold()
     matched = [
         document
@@ -71,6 +76,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Audit nội dung trong Chroma DB.")
     parser.add_argument("--keyword", default="rèn luyện")
     parser.add_argument("--limit", type=int, default=20)
-    parser.add_argument("--school", choices=["HCMUT", "NTTU"])
+    parser.add_argument("--school", choices=["HCMUT", "NTTU", "HUIT"])
+    parser.add_argument("--persist-dir", type=Path, default=None)
     args = parser.parse_args()
-    audit_keyword(keyword=args.keyword, limit=args.limit, school=args.school)
+    persist_dir = args.persist_dir
+    if persist_dir is None and args.school == "HUIT":
+        persist_dir = PROJECT_ROOT / "data" / "huit_db"
+    audit_keyword(
+        keyword=args.keyword,
+        limit=args.limit,
+        school=args.school,
+        persist_directory=persist_dir or DEFAULT_CHROMA_DIR,
+    )

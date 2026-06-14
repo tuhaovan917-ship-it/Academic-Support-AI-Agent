@@ -5,6 +5,7 @@ __pycache__/
 .DS_Store
 chroma_db/
 hcmut_nttu_db/
+data/huit_db/
 data/processed/
 data/raw/
 node_modules/
