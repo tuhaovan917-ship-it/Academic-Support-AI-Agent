@@ -1,0 +1,55 @@
+{
+  "manifest": "data\\document_manifest.yaml",
+  "input_path": "data\\intermediate\\structured_documents.jsonl",
+  "output_path": "data\\processed_chunks.jsonl",
+  "enriched_output_path": "data\\processed_chunks_enriched.jsonl",
+  "total_chunks": 137,
+  "source_type_counts": {
+    "regulation": 70,
+    "guidance": 9,
+    "form": 8,
+    "faq": 50
+  },
+  "unit_type_counts": {
+    "legal_article": 37,
+    "legal_clause": 33,
+    "guidance_section": 9,
+    "form_summary": 8,
+    "faq": 50
+  },
+  "document_chunk_counts": {
+    "huit_qd_3344_2025": 70,
+    "huit_guidance_course_registration_2026": 3,
+    "huit_guidance_academic_status_2026": 4,
+    "huit_guidance_academic_results_2026": 2,
+    "huit_form_bm02_return_to_study": 1,
+    "huit_form_bm03_change_major": 1,
+    "huit_form_bm04_dual_program": 1,
+    "huit_form_bm08_change_training_system": 1,
+    "huit_form_bm09_exam_postponement": 1,
+    "huit_form_bm10_cancel_course": 1,
+    "huit_form_bm11_exemption_credit_recognition": 1,
+    "huit_form_bm12_graduation_application": 1,
+    "huit_faq_user_collected": 50
+  },
+  "review_needed_chunk_count": 1,
+  "warning_chunk_count": 1,
+  "skipped_documents": [
+    {
+      "document_id": "huit_qd_2658_student_affairs_2023",
+      "reason": "pending_ocr_not_chunked",
+      "requires_manual_review": true
+    },
+    {
+      "document_id": "huit_qd_3230_foreign_language_outcomes_2023",
+      "reason": "pending_ocr_not_chunked",
+      "requires_manual_review": true
+    },
+    {
+      "document_id": "huit_qd_3297_it_outcomes_2023",
+      "reason": "pending_ocr_not_chunked",
+      "requires_manual_review": true
+    }
+  ],
+  "validation_issues": []
+}

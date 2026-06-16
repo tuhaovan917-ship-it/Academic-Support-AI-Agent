@@ -1,0 +1,61 @@
+{
+  "chunks_path": "data\\processed_chunks_enriched.jsonl",
+  "review_items_path": "data\\review\\manual_review_items.jsonl",
+  "approved_path": "data\\review\\approved_chunks.jsonl",
+  "pending_path": "data\\review\\pending_chunks.jsonl",
+  "blocked_path": "data\\review\\rejected_or_blocked_chunks.jsonl",
+  "forms_preview_dir": "data\\forms_preview",
+  "total_chunks": 137,
+  "approved_chunks": 136,
+  "pending_chunks": 1,
+  "blocked_chunks": 0,
+  "blocked_source_documents": [
+    {
+      "document_id": "huit_qd_2658_student_affairs_2023",
+      "status": "blocked_before_chunking",
+      "reasons": [
+        "manifest_requires_manual_review",
+        "pending_ocr",
+        "superseded_or_legacy_risk"
+      ],
+      "suggested_action": "Run OCR and manual review, then rerun extraction/cleaning/structuring/chunking before vector upsert."
+    },
+    {
+      "document_id": "huit_qd_3297_it_outcomes_2023",
+      "status": "blocked_before_chunking",
+      "reasons": [
+        "manifest_requires_manual_review",
+        "pending_ocr",
+        "superseded_or_legacy_risk"
+      ],
+      "suggested_action": "Run OCR and manual review, then rerun extraction/cleaning/structuring/chunking before vector upsert."
+    }
+  ],
+  "classification_counts": {
+    "approved": 136,
+    "pending": 1
+  },
+  "reason_counts": {
+    "chunk_requires_manual_review": 1,
+    "manifest_requires_manual_review": 2,
+    "pending_ocr": 2,
+    "superseded_or_legacy_risk": 2
+  },
+  "approved_source_type_counts": {
+    "regulation": 70,
+    "guidance": 9,
+    "form": 7,
+    "faq": 50
+  },
+  "pending_document_ids": [
+    "huit_form_bm09_exam_postponement"
+  ],
+  "discarded_source_documents": [
+    {
+      "document_id": "huit_qd_3230_foreign_language_outcomes_2023",
+      "status": "discarded_by_user_archived_stage25",
+      "archive_root": "data/archive/stage25_discarded_qd3230",
+      "can_vectorize": false
+    }
+  ]
+}

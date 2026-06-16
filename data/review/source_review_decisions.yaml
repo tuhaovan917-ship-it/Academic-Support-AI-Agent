@@ -1,0 +1,59 @@
+stage: 21
+generated_at: '2026-06-16'
+summary:
+  approved_for_vector: 0
+  still_pending: 3
+  discarded_by_user: 1
+  rebuild_vector_db_required: false
+  audit_required_after_rebuild: false
+decisions:
+  huit_form_bm09_exam_postponement:
+    decision: still_pending
+    source_type: form
+    reason: Collected DOCX contains old HUFI portal URL http://sinhvien.hufi.edu.vn/
+      and no confirmed HUIT-updated replacement is available.
+    can_vectorize: false
+    can_use_for_current_policy: false
+    can_use_for_form_hint: false
+    can_use_for_historical_comparison: true
+    required_next_action: Collect or confirm an official HUIT BM09 version; then rerun
+      form preview, review gate, vector upsert, and audit.
+    warning_note: BM09 is relevant to exam postponement but this collected version
+      has legacy HUFI portal information.
+  huit_qd_2658_student_affairs_2023:
+    decision: still_pending
+    source_type: regulation
+    reason: OCR text is readable in parts but has legal-critical noise in decision
+      number/date/header and article text; needs page-by-page correction against the
+      original PDF.
+    can_vectorize: false
+    can_use_for_current_policy: false
+    can_use_for_historical_comparison: true
+    required_next_action: Manually verify decision number, issue date, article numbering,
+      disciplinary provisions, and tables before chunking.
+    warning_note: OCR source only; do not cite as authoritative until reviewed.
+  huit_qd_3230_foreign_language_outcomes_2023:
+    decision: discarded_by_user_do_not_process
+    source_type: regulation
+    reason: OCR has noisy decision number/date/table extraction and the document uses
+      2023 legal basis that must be checked against QD-3344/2025.
+    can_vectorize: false
+    can_use_for_current_policy: false
+    can_use_for_historical_comparison: false
+    required_next_action: Do not continue processing QD-3230. Keep only as temporary
+      review artifact until final cleanup.
+    warning_note: User requested to drop QD-3230 and prioritize QD-3344/2025 as the
+      applicable current regulation.
+    can_use_for_form_hint: false
+  huit_qd_3297_it_outcomes_2023:
+    decision: still_pending
+    source_type: regulation
+    reason: Only 3 OCR pages but confidence is the weakest of the OCR group; decision
+      number/date are noisy and the document uses 2023 legal basis.
+    can_vectorize: false
+    can_use_for_current_policy: false
+    can_use_for_historical_comparison: true
+    required_next_action: Manually verify the official decision number/date and the
+      IT-outcome conditions before chunking.
+    warning_note: Possible legacy/superseded-risk source; do not use for current-policy
+      answers without confirmation.

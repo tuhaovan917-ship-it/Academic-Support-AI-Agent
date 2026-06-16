@@ -1,0 +1,35 @@
+{
+  "chunks_path": "data\\review\\approved_chunks.jsonl",
+  "total_input_chunks": 136,
+  "collection_name": "huit_academic_chunks",
+  "persist_directory": "huit_db",
+  "embedding_model": "BAAI/bge-m3",
+  "collection_count": 141,
+  "source_type_counts": {
+    "regulation": 70,
+    "guidance": 9,
+    "form": 7,
+    "faq": 50
+  },
+  "unit_type_counts": {
+    "legal_article": 37,
+    "legal_clause": 33,
+    "guidance_section": 9,
+    "form_summary": 7,
+    "faq": 50
+  },
+  "document_counts": {
+    "huit_qd_3344_2025": 70,
+    "huit_guidance_course_registration_2026": 3,
+    "huit_guidance_academic_status_2026": 4,
+    "huit_guidance_academic_results_2026": 2,
+    "huit_form_bm02_return_to_study": 1,
+    "huit_form_bm03_change_major": 1,
+    "huit_form_bm04_dual_program": 1,
+    "huit_form_bm08_change_training_system": 1,
+    "huit_form_bm10_cancel_course": 1,
+    "huit_form_bm11_exemption_credit_recognition": 1,
+    "huit_form_bm12_graduation_application": 1,
+    "huit_faq_user_collected": 50
+  }
+}

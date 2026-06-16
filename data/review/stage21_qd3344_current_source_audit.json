@@ -1,0 +1,60 @@
+{
+  "document_id": "huit_qd_3344_2025",
+  "status": "pass",
+  "chunk_count": 70,
+  "unit_counts": {
+    "legal_article": 37,
+    "legal_clause": 33
+  },
+  "article_count": 44,
+  "missing_articles": [],
+  "metadata_issue_count": 0,
+  "citation_issue_count": 0,
+  "critical_checks": {
+    "article_18_training_time_table_present": true,
+    "article_30_academic_warning_present": true,
+    "article_34_exam_absence_or_postponement_present": true,
+    "article_39_graduation_conditions_present": true,
+    "article_40_five_percent_rule_present": true,
+    "article_44_final_article_present": true
+  },
+  "table_notes": [
+    {
+      "chunk_id": "huit_qd_3344_2025:legal_article:article_18:fdaecb0cbcdc3ecd",
+      "article": "18",
+      "has_markdown_table": true,
+      "has_flattened_math_or_symbols": false,
+      "snippet": "Điều 18. Thời gian và kế hoạch đào tạo 1. Trường tổ chức đào tạo theo khóa học, năm học và học kỳ (HK) a) Khóa học là thời gian thiết kế để người học hoàn thành một chương trình. Tùy thuộc vào mỗi chương trình, thời gian"
+    },
+    {
+      "chunk_id": "huit_qd_3344_2025:legal_clause:article_21_clause_2:b2b2e00542665387",
+      "article": "21",
+      "has_markdown_table": true,
+      "has_flattened_math_or_symbols": false,
+      "snippet": "Điều 21. Đăng ký khối lượng học tập 2. Đăng ký khối lượng học tập a) Định mức đăng ký khối lượng học tập Bảng 2. Số tín chỉ đăng ký tối thiểu và tối đa trong học kỳ Số tín chỉ tối Số tín chỉ Bậc, hệ đào thiểu/học kỳ TT Đ"
+    },
+    {
+      "chunk_id": "huit_qd_3344_2025:legal_clause:article_30_clause_4:060beb13d7769fda",
+      "article": "30",
+      "has_markdown_table": true,
+      "has_flattened_math_or_symbols": false,
+      "snippet": "Điều 30. Đánh giá kết quả học tập học phần 4. Thang điểm đánh giá a) Các thang điểm đánh giá: Thang điểm 10: gồm các số từ 0 đến 10 (với một số lẻ thập phân) được sử dụng để đánh giá và ghi điểm chuyên cần, điểm đánh giá"
+    },
+    {
+      "chunk_id": "huit_qd_3344_2025:legal_clause:article_30_clause_5:0534610bcdb9261e",
+      "article": "30",
+      "has_markdown_table": true,
+      "has_flattened_math_or_symbols": false,
+      "snippet": "Điều 30. Đánh giá kết quả học tập học phần 5. Một số điểm đặc biệt Quy định bổ sung một số điểm đặc biệt được dùng trong bảng kết quả học tập được trình bày trong Bảng 4. a) Cấm thi (Điểm F) Cấm thi là hình thức xử lý ng"
+    },
+    {
+      "chunk_id": "huit_qd_3344_2025:legal_article:article_32:62c51a457fd580a5",
+      "article": "32",
+      "has_markdown_table": true,
+      "has_flattened_math_or_symbols": false,
+      "snippet": "Điều 32. Điểm trung bình chung 1. Số tín chỉ tích lũy Số tín chỉ tích lũy là tổng số tín chỉ của các học phần người học đã đăng ký, đã học và có điểm tổng kết đạt yêu cầu (kể cả các học phần được bảo lưu, miễn học, miễn "
+    }
+  ],
+  "recommendation": "QD-3344 is suitable as the primary current legal source. Do a targeted table cleanup for table-heavy articles before final cleanup.",
+  "boundary_note": "The supplied PDF contains Articles 1-44 and the attached-form index; Articles 45-46 were not found in this file."
+}

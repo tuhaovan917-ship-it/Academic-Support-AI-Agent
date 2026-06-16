@@ -1,0 +1,31 @@
+{
+  "stage": 25,
+  "status": "completed",
+  "cleanup_mode": "remove_discarded_and_temporary_artifacts",
+  "removed_discarded_or_temporary_artifact_count": 32,
+  "removed_empty_directories": [
+    "data/review/stage19_pdf_pages"
+  ],
+  "removed_cache_directories": [
+    "scripts/__pycache__",
+    "src/__pycache__",
+    "tests/__pycache__"
+  ],
+  "kept_references": [
+    "data/document_manifest.yaml",
+    "data/review/approved_chunks.jsonl",
+    "data/review/source_review_decisions.yaml",
+    "data/review/audit_cases.jsonl",
+    "data/review/retrieval_audit_report.json",
+    "data/review/retrieval_audit_report.md",
+    "huit_db/"
+  ],
+  "qd3230_status": "discarded_by_user_not_used_for_current_policy",
+  "verification": {
+    "compileall": "passed",
+    "retrieval_audit_total_cases": 100,
+    "retrieval_audit_passed_cases": 100,
+    "retrieval_audit_failed_cases": 0,
+    "collection_count": 141
+  }
+}
