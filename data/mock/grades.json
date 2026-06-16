@@ -1,0 +1,90 @@
+{
+  "SV001": {
+    "cumulative_gpa": 3.35,
+    "total_credits": 126,
+    "retaken_credits": 0,
+    "retake_ratio": 0.0,
+    "courses": [
+      {
+        "semester": "2025-2026-1",
+        "course_code": "TP101",
+        "course_name": "Hoa hoc thuc pham",
+        "credits": 3,
+        "grade_4": 3.5,
+        "status": "passed"
+      }
+    ]
+  },
+  "SV002": {
+    "cumulative_gpa": 2.65,
+    "total_credits": 120,
+    "retaken_credits": 3,
+    "retake_ratio": 0.025,
+    "courses": [
+      {
+        "semester": "2025-2026-1",
+        "course_code": "QT301",
+        "course_name": "Tai chinh doanh nghiep",
+        "credits": 3,
+        "grade_4": 0.0,
+        "status": "failed"
+      },
+      {
+        "semester": "2025-2026-1",
+        "course_code": "QT315",
+        "course_name": "Quan tri chien luoc",
+        "credits": 3,
+        "grade_4": 0.0,
+        "status": "failed"
+      }
+    ]
+  },
+  "SV003": {
+    "cumulative_gpa": 1.86,
+    "total_credits": 122,
+    "retaken_credits": 6,
+    "retake_ratio": 0.049,
+    "courses": [
+      {
+        "semester": "2025-2026-1",
+        "course_code": "KT301",
+        "course_name": "Ke toan tai chinh",
+        "credits": 3,
+        "grade_4": 1.0,
+        "status": "passed"
+      }
+    ]
+  },
+  "SV004": {
+    "cumulative_gpa": 3.45,
+    "total_credits": 126,
+    "retaken_credits": 9,
+    "retake_ratio": 0.071,
+    "courses": [
+      {
+        "semester": "2025-2026-1",
+        "course_code": "IT401",
+        "course_name": "Do an phan mem",
+        "credits": 4,
+        "grade_4": 3.7,
+        "status": "passed"
+      }
+    ]
+  },
+  "SV005": {
+    "cumulative_gpa": 2.8,
+    "total_credits": 126,
+    "retaken_credits": 0,
+    "retake_ratio": 0.0,
+    "courses": [
+      {
+        "semester": "2025-2026-1",
+        "course_code": "AV410",
+        "course_name": "Bien phien dich",
+        "credits": 3,
+        "grade_4": 3.0,
+        "status": "passed"
+      }
+    ]
+  }
+}

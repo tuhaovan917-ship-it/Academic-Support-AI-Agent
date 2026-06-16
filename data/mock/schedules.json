@@ -1,0 +1,66 @@
+{
+  "SV001": [
+    {
+      "semester": "2025-2026-2",
+      "day": "Monday",
+      "time": "07:00-09:30",
+      "course_code": "TP101",
+      "course_name": "Hoa hoc thuc pham",
+      "room": "B.203",
+      "lecturer": "ThS. Nguyen Van A"
+    },
+    {
+      "semester": "2025-2026-2",
+      "day": "Wednesday",
+      "time": "13:00-15:30",
+      "course_code": "TP205",
+      "course_name": "Cong nghe che bien",
+      "room": "C.401",
+      "lecturer": "TS. Le Thi B"
+    }
+  ],
+  "SV002": [
+    {
+      "semester": "2025-2026-2",
+      "day": "Tuesday",
+      "time": "09:45-12:00",
+      "course_code": "QT210",
+      "course_name": "Quan tri marketing",
+      "room": "A.305",
+      "lecturer": "ThS. Tran Van C"
+    }
+  ],
+  "SV003": [
+    {
+      "semester": "2025-2026-2",
+      "day": "Thursday",
+      "time": "07:00-09:30",
+      "course_code": "KT301",
+      "course_name": "Ke toan tai chinh",
+      "room": "B.101",
+      "lecturer": "TS. Pham Thi D"
+    }
+  ],
+  "SV004": [
+    {
+      "semester": "2025-2026-2",
+      "day": "Friday",
+      "time": "13:00-16:30",
+      "course_code": "IT401",
+      "course_name": "Do an phan mem",
+      "room": "Lab 5",
+      "lecturer": "ThS. Hoang Van E"
+    }
+  ],
+  "SV005": [
+    {
+      "semester": "2025-2026-2",
+      "day": "Monday",
+      "time": "09:45-12:00",
+      "course_code": "AV410",
+      "course_name": "Bien phien dich",
+      "room": "D.204",
+      "lecturer": "ThS. Vo Thi F"
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "SV001": {
+    "student_id": "SV001",
+    "full_name": "Nguyen An",
+    "major": "Cong nghe thuc pham",
+    "cohort": "2022",
+    "certificates": {
+      "gdqp": true,
+      "gdtc": true,
+      "foreign_language": true,
+      "it": true
+    },
+    "disciplinary_warning": false
+  },
+  "SV002": {
+    "student_id": "SV002",
+    "full_name": "Tran Binh",
+    "major": "Quan tri kinh doanh",
+    "cohort": "2021",
+    "certificates": {
+      "gdqp": true,
+      "gdtc": true,
+      "foreign_language": true,
+      "it": true
+    },
+    "disciplinary_warning": false
+  },
+  "SV003": {
+    "student_id": "SV003",
+    "full_name": "Le Chi",
+    "major": "Ke toan",
+    "cohort": "2021",
+    "certificates": {
+      "gdqp": true,
+      "gdtc": true,
+      "foreign_language": true,
+      "it": true
+    },
+    "disciplinary_warning": false
+  },
+  "SV004": {
+    "student_id": "SV004",
+    "full_name": "Pham Dung",
+    "major": "Cong nghe thong tin",
+    "cohort": "2020",
+    "certificates": {
+      "gdqp": true,
+      "gdtc": true,
+      "foreign_language": true,
+      "it": true
+    },
+    "disciplinary_warning": false
+  },
+  "SV005": {
+    "student_id": "SV005",
+    "full_name": "Hoang Em",
+    "major": "Ngon ngu Anh",
+    "cohort": "2020",
+    "certificates": {
+      "gdqp": true,
+      "gdtc": false,
+      "foreign_language": false,
+      "it": true
+    },
+    "disciplinary_warning": false
+  }
+}
