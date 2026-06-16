@@ -17,8 +17,8 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod());
 });
 
-builder.Services.AddSingleton<MockAcademicStore>();
-builder.Services.AddSingleton<MockChatService>();
+builder.Services.AddSingleton<IAcademicStore, MockAcademicStore>();
+builder.Services.AddSingleton<IChatAnswerService, MockChatService>();
 
 var app = builder.Build();
 
@@ -42,10 +42,10 @@ app.MapGet("/api/config/database", (IConfiguration configuration) =>
     });
 });
 
-app.MapGet("/api/students", (MockAcademicStore store) =>
+app.MapGet("/api/students", (IAcademicStore store) =>
     Results.Ok(store.GetStudents()));
 
-app.MapGet("/api/students/{studentId}", (string studentId, MockAcademicStore store) =>
+app.MapGet("/api/students/{studentId}", (string studentId, IAcademicStore store) =>
 {
     var student = store.GetStudent(studentId);
     return student is null
@@ -53,7 +53,7 @@ app.MapGet("/api/students/{studentId}", (string studentId, MockAcademicStore sto
         : Results.Ok(student);
 });
 
-app.MapGet("/api/students/{studentId}/schedule", (string studentId, MockAcademicStore store) =>
+app.MapGet("/api/students/{studentId}/schedule", (string studentId, IAcademicStore store) =>
 {
     if (store.GetStudent(studentId) is null)
     {
@@ -63,7 +63,7 @@ app.MapGet("/api/students/{studentId}/schedule", (string studentId, MockAcademic
     return Results.Ok(store.GetSchedule(studentId));
 });
 
-app.MapGet("/api/students/{studentId}/grades", (string studentId, MockAcademicStore store) =>
+app.MapGet("/api/students/{studentId}/grades", (string studentId, IAcademicStore store) =>
 {
     if (store.GetStudent(studentId) is null)
     {
@@ -73,7 +73,7 @@ app.MapGet("/api/students/{studentId}/grades", (string studentId, MockAcademicSt
     return Results.Ok(store.GetGrades(studentId));
 });
 
-app.MapGet("/api/students/{studentId}/academic-summary", (string studentId, MockAcademicStore store) =>
+app.MapGet("/api/students/{studentId}/academic-summary", (string studentId, IAcademicStore store) =>
 {
     var summary = store.GetAcademicSummary(studentId);
     return summary is null
@@ -81,7 +81,7 @@ app.MapGet("/api/students/{studentId}/academic-summary", (string studentId, Mock
         : Results.Ok(summary);
 });
 
-app.MapPost("/api/chat/sessions", (CreateSessionRequest request, MockAcademicStore store) =>
+app.MapPost("/api/chat/sessions", (CreateSessionRequest request, IAcademicStore store) =>
 {
     if (store.GetStudent(request.StudentId) is null)
     {
@@ -93,13 +93,17 @@ app.MapPost("/api/chat/sessions", (CreateSessionRequest request, MockAcademicSto
         store.CreateSession(request.StudentId, request.Title));
 });
 
-app.MapGet("/api/chat/sessions", (string? studentId, MockAcademicStore store) =>
+app.MapGet("/api/chat/sessions", (string? studentId, IAcademicStore store) =>
     Results.Ok(store.GetSessions(studentId)));
 
-app.MapGet("/api/chat/sessions/{sessionId:guid}/messages", (Guid sessionId, MockAcademicStore store) =>
+app.MapGet("/api/chat/sessions/{sessionId:guid}/messages", (Guid sessionId, IAcademicStore store) =>
     Results.Ok(store.GetMessages(sessionId)));
 
-app.MapPost("/api/chat", (ChatRequest request, MockAcademicStore store, MockChatService chatService) =>
+app.MapPost("/api/chat", async Task<IResult> (
+    ChatRequest request,
+    IAcademicStore store,
+    IChatAnswerService chatService,
+    CancellationToken cancellationToken) =>
 {
     if (string.IsNullOrWhiteSpace(request.Message))
     {
@@ -111,7 +115,7 @@ app.MapPost("/api/chat", (ChatRequest request, MockAcademicStore store, MockChat
         return Results.NotFound(new ApiError("student_not_found", "Không tìm thấy sinh viên."));
     }
 
-    var response = chatService.Answer(request);
+    var response = await chatService.AnswerAsync(request, cancellationToken);
     return Results.Ok(response);
 });
 

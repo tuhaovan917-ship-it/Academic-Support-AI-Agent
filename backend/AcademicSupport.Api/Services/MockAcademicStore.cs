@@ -2,7 +2,7 @@ using AcademicSupport.Api.Models;
 
 namespace AcademicSupport.Api.Services;
 
-public sealed class MockAcademicStore
+public sealed class MockAcademicStore : IAcademicStore
 {
     private readonly List<Student> _students =
     [

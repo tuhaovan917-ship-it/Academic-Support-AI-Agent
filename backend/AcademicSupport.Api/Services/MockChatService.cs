@@ -4,10 +4,14 @@ using AcademicSupport.Api.Models;
 
 namespace AcademicSupport.Api.Services;
 
-public sealed class MockChatService(MockAcademicStore store)
+public sealed class MockChatService(IAcademicStore store) : IChatAnswerService
 {
-    public ChatResponse Answer(ChatRequest request)
+    public Task<ChatResponse> AnswerAsync(
+        ChatRequest request,
+        CancellationToken cancellationToken = default)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var session = store.EnsureSession(request.StudentId, request.SessionId);
         var userMessage = store.AddMessage(session.Id, "user", request.Message.Trim());
         var normalized = NormalizeSearchText(request.Message);
@@ -16,7 +20,15 @@ public sealed class MockChatService(MockAcademicStore store)
         var citations = new List<ChatCitation>();
         string answer;
 
-        if (ContainsAny(normalized, "lich", "thoi khoa bieu", "schedule"))
+        if (ContainsAny(normalized, "ten sinh vien", "ten cua em", "em ten gi", "ho ten", "thong tin sinh vien", "ma sinh vien", "email", "lop", "nganh", "khoa", "toi la ai", "minh la ai", "profile"))
+        {
+            var student = store.GetStudent(request.StudentId);
+            cards.Add(new ChatCard("student", "Thông tin sinh viên", student!));
+            answer = student is null
+                ? "Không tìm thấy thông tin sinh viên."
+                : $"Thông tin của bạn: {student.FullName} ({student.Id}), lớp {student.ClassCode}, ngành {student.Major}, khoa {student.Faculty}, khóa {student.IntakeYear}. Email: {student.Email}.";
+        }
+        else if (ContainsAny(normalized, "lich", "thoi khoa bieu", "schedule"))
         {
             var schedule = store.GetSchedule(request.StudentId);
             cards.Add(new ChatCard("schedule", "Thời khóa biểu học kỳ hiện tại", schedule));
@@ -54,7 +66,7 @@ public sealed class MockChatService(MockAcademicStore store)
         }
 
         var assistantMessage = store.AddMessage(session.Id, "assistant", answer);
-        return new ChatResponse(session.Id, userMessage, assistantMessage, citations, cards);
+        return Task.FromResult(new ChatResponse(session.Id, userMessage, assistantMessage, citations, cards));
     }
 
     private static bool ContainsAny(string text, params string[] keywords) =>

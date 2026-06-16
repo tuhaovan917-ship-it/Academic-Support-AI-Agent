@@ -18,6 +18,7 @@ obj/
 # IDEs and editors
 .vscode/
 .idea/
+.vs/
 *.swp
 *.swo
 

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import {
   AcademicSummary,
@@ -21,7 +21,9 @@ interface GradesCardData {
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewChecked {
+  @ViewChild('chatHistory') private chatHistory?: ElementRef<HTMLElement>;
+
   students: Student[] = [];
   selectedStudentId = '';
   selectedStudent?: Student;
@@ -32,12 +34,15 @@ export class AppComponent implements OnInit {
   summary?: AcademicSummary;
 
   messages: ChatMessage[] = [];
+  pendingUserMessage?: ChatMessage;
   citations: ChatCitation[] = [];
   cards: ChatCard[] = [];
   prompt = '';
   isSending = false;
   isLoadingStudent = false;
+  isBackendAvailable = true;
   errorMessage = '';
+  private shouldScrollToBottom = false;
 
   readonly quickPrompts = [
     'Tóm tắt câu trả lời này',
@@ -45,17 +50,23 @@ export class AppComponent implements OnInit {
     'Cần gặp phòng đào tạo khi nào?',
   ];
 
-  readonly recentTopics = [
-    'Đăng ký học phần',
-    'Điểm và môn nợ',
-    'Lịch học tuần này',
-  ];
+  private readonly fallbackStudent: Student = {
+    id: 'SV001',
+    fullName: 'Nguyen Van An',
+    faculty: 'Công nghệ thông tin',
+    major: 'Kỹ thuật phần mềm',
+    classCode: '13DHTH01',
+    intakeYear: 2023,
+    email: 'an.nguyen@student.huit.edu.vn',
+  };
 
   constructor(private readonly api: AcademicApiService) {}
 
   ngOnInit(): void {
     this.api.getStudents().subscribe({
       next: (students) => {
+        this.isBackendAvailable = true;
+        this.errorMessage = '';
         this.students = students;
         if (students.length > 0) {
           this.selectedStudentId = students[0].id;
@@ -63,9 +74,18 @@ export class AppComponent implements OnInit {
         }
       },
       error: () => {
-        this.errorMessage = 'Không kết nối được backend. Hãy chạy AcademicSupport.Api trước.';
+        this.useOfflinePreview();
       },
     });
+  }
+
+  ngAfterViewChecked(): void {
+    if (!this.shouldScrollToBottom) {
+      return;
+    }
+
+    this.shouldScrollToBottom = false;
+    this.scrollToBottom();
   }
 
   selectStudent(studentId: string): void {
@@ -73,15 +93,19 @@ export class AppComponent implements OnInit {
     this.selectedStudent = this.students.find((student) => student.id === studentId);
     this.startNewChat();
     this.errorMessage = '';
-    this.isLoadingStudent = true;
 
+    if (!this.isBackendAvailable) {
+      return;
+    }
+
+    this.isLoadingStudent = true;
     this.api.getSchedule(studentId).subscribe({
       next: (schedule) => (this.schedule = schedule),
-      error: () => (this.errorMessage = 'Không tải được thời khóa biểu.'),
+      error: () => this.handleBackendLost('Không tải được thời khóa biểu.'),
     });
     this.api.getGrades(studentId).subscribe({
       next: (grades) => (this.grades = grades),
-      error: () => (this.errorMessage = 'Không tải được bảng điểm.'),
+      error: () => this.handleBackendLost('Không tải được bảng điểm.'),
     });
     this.api.getAcademicSummary(studentId).subscribe({
       next: (summary) => {
@@ -89,8 +113,8 @@ export class AppComponent implements OnInit {
         this.isLoadingStudent = false;
       },
       error: () => {
-        this.errorMessage = 'Không tải được tóm tắt học tập.';
         this.isLoadingStudent = false;
+        this.handleBackendLost('Không tải được tóm tắt học tập.');
       },
     });
   }
@@ -98,9 +122,12 @@ export class AppComponent implements OnInit {
   startNewChat(): void {
     this.sessionId = undefined;
     this.messages = [];
+    this.pendingUserMessage = undefined;
     this.cards = [];
     this.citations = [];
     this.prompt = '';
+    this.errorMessage = '';
+    this.queueScrollToBottom();
   }
 
   askSchedule(): void {
@@ -126,9 +153,26 @@ export class AppComponent implements OnInit {
       return;
     }
 
+    if (!this.isBackendAvailable) {
+      this.addLocalOfflineReply(message);
+      this.prompt = '';
+      this.queueScrollToBottom();
+      return;
+    }
+
     this.isSending = true;
     this.errorMessage = '';
     this.prompt = '';
+    this.cards = [];
+    this.citations = [];
+    this.pendingUserMessage = {
+      id: crypto.randomUUID(),
+      sessionId: this.sessionId ?? 'pending',
+      role: 'user',
+      content: message,
+      createdAt: new Date().toISOString(),
+    };
+    this.queueScrollToBottom();
 
     this.api
       .sendChat({
@@ -140,13 +184,18 @@ export class AppComponent implements OnInit {
         next: (response) => {
           this.sessionId = response.sessionId;
           this.messages = [...this.messages, response.userMessage, response.assistantMessage];
+          this.pendingUserMessage = undefined;
           this.citations = response.citations;
           this.cards = response.cards;
           this.isSending = false;
+          this.queueScrollToBottom();
         },
         error: () => {
-          this.errorMessage = 'Gửi câu hỏi thất bại. Kiểm tra backend rồi thử lại.';
           this.isSending = false;
+          this.pendingUserMessage = undefined;
+          this.handleBackendLost('Gửi câu hỏi thất bại. Kiểm tra backend rồi thử lại.');
+          this.addLocalOfflineReply(message);
+          this.queueScrollToBottom();
         },
       });
   }
@@ -167,5 +216,66 @@ export class AppComponent implements OnInit {
 
   trackByMessageId(_: number, message: ChatMessage): string {
     return message.id;
+  }
+
+  private useOfflinePreview(): void {
+    this.isBackendAvailable = false;
+    this.isLoadingStudent = false;
+    this.errorMessage = '';
+    this.students = [this.fallbackStudent];
+    this.selectedStudentId = this.fallbackStudent.id;
+    this.selectedStudent = this.fallbackStudent;
+    this.schedule = [];
+    this.grades = [];
+    this.summary = undefined;
+  }
+
+  private handleBackendLost(message: string): void {
+    this.isBackendAvailable = false;
+    this.errorMessage = message;
+  }
+
+  private addLocalOfflineReply(message: string): void {
+    const sessionId = this.sessionId ?? crypto.randomUUID();
+    this.sessionId = sessionId;
+    const now = new Date().toISOString();
+    this.messages = [
+      ...this.messages,
+      {
+        id: crypto.randomUUID(),
+        sessionId,
+        role: 'user',
+        content: message,
+        createdAt: now,
+      },
+      {
+        id: crypto.randomUUID(),
+        sessionId,
+        role: 'assistant',
+        content:
+          'Backend hiện chưa kết nối nên mình chỉ hiển thị bản xem trước giao diện. Hãy chạy AcademicSupport.Api ở http://localhost:5098 để chatbot trả lời bằng dữ liệu thật.',
+        createdAt: now,
+      },
+    ];
+    this.cards = [];
+    this.citations = [];
+    this.queueScrollToBottom();
+  }
+
+  private queueScrollToBottom(): void {
+    this.shouldScrollToBottom = true;
+    setTimeout(() => this.scrollToBottom(), 0);
+  }
+
+  private scrollToBottom(): void {
+    const element = this.chatHistory?.nativeElement;
+    if (!element) {
+      return;
+    }
+
+    element.scrollTo({
+      top: element.scrollHeight,
+      behavior: 'smooth',
+    });
   }
 }

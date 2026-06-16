@@ -145,26 +145,18 @@ p {
 }
 
 .nav-link:not(.active):hover,
-.recent button:hover,
 .footer-link:hover {
   background: var(--surface-container-high);
 }
 
-.recent {
-  margin-top: 34px;
+.conversation-link {
+  border-radius: 10px;
+  height: 52px;
+  margin-top: 6px;
 }
 
-.recent button {
-  background: transparent;
-  border: 0;
-  border-radius: 8px;
-  color: var(--on-surface-variant);
-  display: block;
+.conversation-link span:last-child {
   font-size: 15px;
-  height: 46px;
-  padding: 0 20px;
-  text-align: left;
-  width: 100%;
 }
 
 .student-mini {
@@ -289,6 +281,11 @@ p {
   padding: 8px 10px;
 }
 
+.title-wrap span.offline {
+  background: #ffdad6;
+  color: #93000a;
+}
+
 .new-chat {
   align-items: center;
   background: var(--primary);
@@ -311,7 +308,7 @@ p {
 .chat-history {
   flex: 1;
   overflow-y: auto;
-  padding: 32px 16px 188px;
+  padding: 32px 16px 280px;
 }
 
 .thread {
@@ -329,11 +326,13 @@ p {
   gap: 18px;
 }
 
-.error {
-  background: #ffdad6;
-  border: 1px solid #ba1a1a;
-  border-radius: 10px;
-  color: #93000a;
+.connection-note {
+  background: var(--surface-container);
+  border: 1px solid var(--outline-variant);
+  border-radius: 14px;
+  color: var(--on-surface-variant);
+  font-size: 14px;
+  line-height: 1.5;
   padding: 12px 14px;
 }
 

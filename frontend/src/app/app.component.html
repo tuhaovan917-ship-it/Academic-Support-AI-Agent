@@ -3,8 +3,8 @@
     <span class="material-symbols-outlined">menu</span>
   </button>
   <span>HUIT AI</span>
-  <button type="button" aria-label="Cài đặt">
-    <span class="material-symbols-outlined">settings</span>
+  <button type="button" aria-label="Hội thoại mới" (click)="startNewChat()">
+    <span class="material-symbols-outlined">add</span>
   </button>
 </div>
 
@@ -22,48 +22,28 @@
   <div class="sidebar-scroll">
     <div class="section-label">Hội thoại</div>
     <button type="button" class="nav-link active" (click)="startNewChat()">
-      <span class="material-symbols-outlined filled">history</span>
-      <span>Lịch sử</span>
+      <span class="material-symbols-outlined">add_comment</span>
+      <span>Hội thoại mới</span>
     </button>
-    <button type="button" class="nav-link">
-      <span class="material-symbols-outlined">bookmark</span>
-      <span>Đã lưu</span>
+    <button type="button" class="nav-link conversation-link" (click)="askRegistration()">
+      <span class="material-symbols-outlined">edit_note</span>
+      <span>Đăng ký học phần</span>
     </button>
-    <button type="button" class="nav-link">
-      <span class="material-symbols-outlined">insights</span>
-      <span>Thống kê</span>
+    <button type="button" class="nav-link conversation-link" (click)="askGrades()">
+      <span class="material-symbols-outlined">grading</span>
+      <span>Điểm và môn nợ</span>
     </button>
-    <button type="button" class="nav-link">
-      <span class="material-symbols-outlined">settings</span>
-      <span>Cài đặt</span>
+    <button type="button" class="nav-link conversation-link" (click)="askSchedule()">
+      <span class="material-symbols-outlined">calendar_month</span>
+      <span>Lịch học tuần này</span>
     </button>
 
-    <div class="recent">
-      <div class="section-label">Gần đây</div>
-      <button type="button" (click)="askRegistration()">Đăng ký học phần</button>
-      <button type="button" (click)="askGrades()">Điểm và môn nợ</button>
-      <button type="button" (click)="askSchedule()">Lịch học tuần này</button>
-    </div>
-
-    <div class="student-mini" *ngIf="selectedStudent">
-      <label for="student">Sinh viên</label>
-      <select id="student" [(ngModel)]="selectedStudentId" (ngModelChange)="selectStudent($event)">
-        <option *ngFor="let student of students" [value]="student.id">
-          {{ student.id }} - {{ student.fullName }}
-        </option>
-      </select>
-      <p>{{ selectedStudent.classCode }} · {{ selectedStudent.major }}</p>
-    </div>
   </div>
 
   <div class="sidebar-footer">
     <button type="button" class="clear-button" (click)="startNewChat()">
       <span class="material-symbols-outlined">delete</span>
       Xóa lịch sử
-    </button>
-    <button type="button" class="footer-link">
-      <span class="material-symbols-outlined">contact_support</span>
-      Hỗ trợ
     </button>
     <button type="button" class="footer-link">
       <span class="material-symbols-outlined">account_circle</span>
@@ -76,7 +56,9 @@
   <header class="desktop-topbar">
     <div class="title-wrap">
       <h2>Tư vấn học vụ</h2>
-      <span>HUIT demo</span>
+      <span [class.offline]="!isBackendAvailable">
+        {{ isBackendAvailable ? 'Backend đã kết nối' : 'Chưa kết nối backend' }}
+      </span>
     </div>
     <button type="button" class="new-chat" (click)="startNewChat()">
       <span class="material-symbols-outlined">add</span>
@@ -84,9 +66,11 @@
     </button>
   </header>
 
-  <section class="chat-history custom-scrollbar">
+  <section #chatHistory class="chat-history custom-scrollbar">
     <div class="thread">
-      <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+      <p class="connection-note" *ngIf="!isBackendAvailable">
+        {{ errorMessage || 'Bạn vẫn có thể xem giao diện và nhập tiếng Việt. Chạy backend để nhận phản hồi từ API.' }}
+      </p>
 
       <ng-container *ngIf="messages.length === 0">
         <div class="exchange">
@@ -161,13 +145,8 @@
               <span class="material-symbols-outlined filled">neurology</span>
             </div>
             <div class="assistant-body prose">
-              <p><strong>Có.</strong> Với dữ liệu demo hiện tại, trợ lý sẽ kiểm tra bảng điểm và đánh dấu các môn cần học lại hoặc cải thiện.</p>
-              <ul>
-                <li><strong>Môn nợ:</strong> môn có trạng thái chưa đạt hoặc cần học lại.</li>
-                <li><strong>GPA:</strong> được tính tạm thời từ dữ liệu điểm mock API.</li>
-                <li><strong>Lưu ý:</strong> khi nối RAG, câu trả lời sẽ kèm căn cứ từ quy chế học vụ.</li>
-              </ul>
-              <p>Hãy thử hỏi: “Điểm GPA và môn nợ của em thế nào?”</p>
+              <p><strong>Có.</strong> Trợ lý sẽ kiểm tra bảng điểm, đánh dấu môn cần học lại và tính GPA tạm thời từ dữ liệu học vụ.</p>
+              <p>Khi nối RAG, câu trả lời sẽ kèm căn cứ từ quy chế học vụ để sinh viên dễ đối chiếu.</p>
               <div class="response-actions bordered">
                 <button type="button" title="Sao chép">
                   <span class="material-symbols-outlined">content_copy</span>
@@ -198,6 +177,10 @@
           </div>
         </div>
       </ng-container>
+
+      <div class="user-message" *ngIf="pendingUserMessage">
+        <div class="bubble">{{ pendingUserMessage.content }}</div>
+      </div>
 
       <div class="assistant-message" *ngIf="cards.length > 0 || citations.length > 0">
         <div class="avatar">
