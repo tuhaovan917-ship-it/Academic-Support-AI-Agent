@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .env
 .DS_Store
+~$*.docx
 
 chroma_db/
 hcmut_nttu_db/
