@@ -1,0 +1,185 @@
+{
+  "manifest": "data\\document_manifest.yaml",
+  "input_dir": "data\\processed_clean",
+  "output_path": "data\\intermediate\\structured_documents.jsonl",
+  "total_documents": 16,
+  "status_counts": {
+    "structured": 13,
+    "pending_ocr": 3
+  },
+  "parser_profile_counts": {
+    "legal_articles": 1,
+    "scanned_legal_pdf": 3,
+    "guidance_steps": 3,
+    "form_docx": 8,
+    "faq_jsonl": 1
+  },
+  "structure_type_counts": {
+    "legal_articles": 1,
+    "pending_ocr": 3,
+    "guidance_steps": 3,
+    "form_docx": 8,
+    "faq_jsonl": 1
+  },
+  "critical_rule_issues": [],
+  "documents": [
+    {
+      "document_id": "huit_qd_3344_2025",
+      "status": "structured",
+      "structure_type": "legal_articles",
+      "stats": {
+        "chapter_count": 6,
+        "article_count": 44,
+        "clause_count": 126,
+        "point_count": 188
+      }
+    },
+    {
+      "document_id": "huit_qd_2658_student_affairs_2023",
+      "status": "pending_ocr",
+      "structure_type": "pending_ocr",
+      "stats": {
+        "structured_unit_count": 0
+      }
+    },
+    {
+      "document_id": "huit_qd_3230_foreign_language_outcomes_2023",
+      "status": "pending_ocr",
+      "structure_type": "pending_ocr",
+      "stats": {
+        "structured_unit_count": 0
+      }
+    },
+    {
+      "document_id": "huit_qd_3297_it_outcomes_2023",
+      "status": "pending_ocr",
+      "structure_type": "pending_ocr",
+      "stats": {
+        "structured_unit_count": 0
+      }
+    },
+    {
+      "document_id": "huit_guidance_course_registration_2026",
+      "status": "structured",
+      "structure_type": "guidance_steps",
+      "stats": {
+        "section_count": 3,
+        "step_count": 0,
+        "note_section_count": 1
+      }
+    },
+    {
+      "document_id": "huit_guidance_academic_status_2026",
+      "status": "structured",
+      "structure_type": "guidance_steps",
+      "stats": {
+        "section_count": 4,
+        "step_count": 12,
+        "note_section_count": 0
+      }
+    },
+    {
+      "document_id": "huit_guidance_academic_results_2026",
+      "status": "structured",
+      "structure_type": "guidance_steps",
+      "stats": {
+        "section_count": 2,
+        "step_count": 0,
+        "note_section_count": 0
+      }
+    },
+    {
+      "document_id": "huit_form_bm02_return_to_study",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 7,
+        "note_count": 0,
+        "table_count": 1
+      }
+    },
+    {
+      "document_id": "huit_form_bm03_change_major",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 12,
+        "note_count": 0,
+        "table_count": 1
+      }
+    },
+    {
+      "document_id": "huit_form_bm04_dual_program",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 8,
+        "note_count": 0,
+        "table_count": 1
+      }
+    },
+    {
+      "document_id": "huit_form_bm08_change_training_system",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 5,
+        "note_count": 2,
+        "table_count": 1
+      }
+    },
+    {
+      "document_id": "huit_form_bm09_exam_postponement",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 12,
+        "note_count": 0,
+        "table_count": 1
+      }
+    },
+    {
+      "document_id": "huit_form_bm10_cancel_course",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 12,
+        "note_count": 3,
+        "table_count": 2
+      }
+    },
+    {
+      "document_id": "huit_form_bm11_exemption_credit_recognition",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 7,
+        "note_count": 0,
+        "table_count": 3
+      }
+    },
+    {
+      "document_id": "huit_form_bm12_graduation_application",
+      "status": "structured",
+      "structure_type": "form_docx",
+      "stats": {
+        "field_count": 14,
+        "note_count": 0,
+        "table_count": 0
+      }
+    },
+    {
+      "document_id": "huit_faq_user_collected",
+      "status": "structured",
+      "structure_type": "faq_jsonl",
+      "stats": {
+        "faq_count": 50,
+        "categories": [
+          "dang_ky_mon_hoc",
+          "quy_che_dao_tao",
+          "thu_tuc_hanh_chinh"
+        ]
+      }
+    }
+  ]
+}

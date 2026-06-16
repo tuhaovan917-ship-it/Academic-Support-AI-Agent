@@ -1,0 +1,18 @@
+{
+  "chunks_path": "data\\review\\historical_warning_chunks.jsonl",
+  "total_input_chunks": 5,
+  "collection_name": "huit_academic_chunks",
+  "persist_directory": "huit_db",
+  "embedding_model": "BAAI/bge-m3",
+  "collection_count": 141,
+  "source_type_counts": {
+    "historical_or_warning_source": 5
+  },
+  "unit_type_counts": {
+    "historical_decision": 1,
+    "historical_regulation_article": 4
+  },
+  "document_counts": {
+    "huit_qd_3297_it_outcomes_2023": 5
+  }
+}

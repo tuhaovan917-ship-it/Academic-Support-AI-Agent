@@ -6,8 +6,10 @@ langchain-community
 langchain-core
 langchain-huggingface
 langchain-text-splitters
+langgraph
 python-dotenv
 rank-bm25
 sentence-transformers
 tqdm
 unstructured[pdf]
+pyyaml
