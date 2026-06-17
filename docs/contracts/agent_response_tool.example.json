@@ -1,0 +1,29 @@
+{
+  "answer": "Lịch học mock của SV004:\n- Friday 13:00-16:30: IT401 - Do an phan mem, phòng Lab 5, giảng viên ThS. Hoang Van E",
+  "status": "answered",
+  "route": "student_schedule",
+  "session_id": "demo-session-tool",
+  "student_id": "SV004",
+  "needs_clarification": false,
+  "clarification_questions": [],
+  "citations": [],
+  "tool_results": {
+    "found": true,
+    "student_id": "SV004",
+    "schedule": [
+      {
+        "semester": "2025-2026-2",
+        "day": "Friday",
+        "time": "13:00-16:30",
+        "course_code": "IT401",
+        "course_name": "Do an phan mem",
+        "room": "Lab 5",
+        "lecturer": "ThS. Hoang Van E"
+      }
+    ]
+  },
+  "metadata": {
+    "service": "agent_service",
+    "response_mode": "compact"
+  }
+}

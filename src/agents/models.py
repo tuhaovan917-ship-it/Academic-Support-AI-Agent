@@ -31,9 +31,12 @@ class PlannerDecision:
     needs_tool: bool = False
     tool_name: str | None = None
     retrieval_intent: str = "current_policy"
+    retrieval_query: str | None = None
+    intent: str = "general"
     pending_slots: list[str] = field(default_factory=list)
     clarification_questions: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
+    planner_meta: dict[str, Any] = field(default_factory=dict)
 
 
 @dataclass
@@ -47,6 +50,8 @@ class AgentResponse:
     tool_results: dict[str, Any] = field(default_factory=dict)
     retrieval_results: list[dict[str, Any]] = field(default_factory=list)
     critic: dict[str, Any] = field(default_factory=dict)
+    llm: dict[str, Any] = field(default_factory=dict)
+    planner: dict[str, Any] = field(default_factory=dict)
     session_id: str = "default"
     student_id: str | None = None
 

@@ -1,10 +1,11 @@
 from __future__ import annotations
 
-from .answering_agent import answer
+from .answering_agent import answer, template_answer
 from .critic_agent import critique
 from .fallback import fallback_answer
+from .hybrid_planner import plan
 from .models import AgentRequest, AgentResponse
-from .planner import extract_student_id, plan
+from .planner import extract_student_id
 from .retriever_agent import retrieve
 from .tool_agent import ToolAgent
 from src.memory import get_session, update_session
@@ -33,6 +34,7 @@ def run_agent(
             needs_clarification=True,
             clarification_questions=decision.clarification_questions,
             critic={"passed": True, "warnings": decision.pending_slots},
+            planner=decision.planner_meta,
             session_id=request.session_id,
             student_id=effective_student_id,
         )
@@ -48,7 +50,7 @@ def run_agent(
 
     retrieval_results = []
     if decision.needs_retrieval:
-        retrieval_query = _retrieval_query_for_route(request.query, decision.route)
+        retrieval_query = decision.retrieval_query or _retrieval_query_for_route(request.query, decision.route)
         retrieval_results = retrieve(retrieval_query, intent=decision.retrieval_intent, k=5)
 
     tool_result = {}
@@ -57,17 +59,18 @@ def run_agent(
 
     if decision.route == "fallback":
         response = AgentResponse(
-            answer=fallback_answer(),
+            answer=fallback_answer("; ".join(decision.notes)),
             route=decision.route,
             status="fallback",
             critic={"passed": True, "warnings": decision.notes},
+            planner=decision.planner_meta,
             session_id=request.session_id,
             student_id=effective_student_id,
         )
         update_session(request.session_id, query=request.query, answer=response.answer, route=decision.route)
         return response
 
-    final_answer, citations = answer(
+    final_answer, citations, llm_meta = answer(
         query=request.query,
         decision=decision,
         retrieval_results=retrieval_results,
@@ -75,6 +78,21 @@ def run_agent(
         student_id=effective_student_id,
     )
     critic = critique(decision, final_answer, citations, retrieval_results, tool_result, effective_student_id)
+    if not critic.get("passed") and llm_meta.get("used"):
+        template_text, template_citations, template_meta = template_answer(decision, retrieval_results, tool_result)
+        template_critic = critique(
+            decision,
+            template_text,
+            template_citations,
+            retrieval_results,
+            tool_result,
+            effective_student_id,
+        )
+        if template_critic.get("passed"):
+            final_answer = template_text
+            citations = template_citations
+            llm_meta = template_meta
+            critic = template_critic
     status = "answered" if critic.get("passed") else "fallback"
     if status == "fallback":
         final_answer = fallback_answer("; ".join(critic.get("errors", [])))
@@ -88,6 +106,8 @@ def run_agent(
         tool_results=tool_result,
         retrieval_results=retrieval_results,
         critic=critic,
+        llm=llm_meta,
+        planner=decision.planner_meta,
         session_id=request.session_id,
         student_id=effective_student_id,
     )

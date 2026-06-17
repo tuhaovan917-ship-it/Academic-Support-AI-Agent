@@ -1,6 +1,5 @@
 chromadb
 beautifulsoup4
-easyocr
 langchain
 langchain-chroma
 langchain-community
@@ -9,7 +8,7 @@ langchain-huggingface
 langchain-text-splitters
 langgraph
 python-dotenv
-pypdf
+openai
 rank-bm25
 sentence-transformers
 tqdm

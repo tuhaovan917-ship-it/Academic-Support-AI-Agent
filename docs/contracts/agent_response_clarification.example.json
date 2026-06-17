@@ -1,0 +1,25 @@
+{
+  "answer": "Bạn cho mình biết MSSV để tra cứu dữ liệu cá nhân được không?",
+  "status": "need_clarification",
+  "route": "student_schedule",
+  "session_id": "demo-session-clarify",
+  "student_id": null,
+  "needs_clarification": true,
+  "clarification_questions": [
+    "Bạn cho mình biết MSSV để tra cứu dữ liệu cá nhân được không?"
+  ],
+  "citations": [],
+  "error": {
+    "code": "ERR_MISSING_MSSV",
+    "message": "Cần MSSV để tra cứu dữ liệu cá nhân.",
+    "details": {
+      "warnings": [
+        "student_id"
+      ]
+    }
+  },
+  "metadata": {
+    "service": "agent_service",
+    "response_mode": "compact"
+  }
+}

@@ -13,7 +13,7 @@ from src.agents import run_agent
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Run HUIT Stage 2A rule-based academic agent.")
+    parser = argparse.ArgumentParser(description="Run HUIT academic agent CLI.")
     parser.add_argument("query", nargs="?", help="User question")
     parser.add_argument("--student-id")
     parser.add_argument("--session-id", default="cli")
@@ -30,6 +30,14 @@ def main() -> int:
             print("\nTrích dẫn:")
             for citation in response.citations:
                 print(f"- {citation}")
+        if response.llm:
+            print(f"\nLLM: {response.llm.get('provider')} (fallback={response.llm.get('fallback_used')})")
+        if response.planner:
+            planner_mode = response.planner.get("mode")
+            planner_provider = response.planner.get("provider")
+            planner_route = response.planner.get("llm_route") or response.planner.get("rule_route")
+            suffix = f", provider={planner_provider}" if planner_provider else ""
+            print(f"Planner: {planner_mode}, route={planner_route}{suffix}")
     return 0
 
 
