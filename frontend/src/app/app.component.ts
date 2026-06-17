@@ -1,20 +1,19 @@
 import { AfterViewChecked, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 
 import {
-  AcademicSummary,
+  AuthResponse,
+  AuthUser,
   ChatCard,
   ChatCitation,
   ChatMessage,
   ChatSession,
-  GradeRecord,
-  ScheduleItem,
   Student,
 } from './models/academic.models';
 import { AcademicApiService } from './services/academic-api.service';
 
-interface GradesCardData {
-  summary: AcademicSummary | null;
-  grades: GradeRecord[];
+interface StoredAuth {
+  accessToken: string;
+  user: AuthUser;
 }
 
 @Component({
@@ -25,15 +24,12 @@ interface GradesCardData {
 })
 export class AppComponent implements OnInit, AfterViewChecked {
   @ViewChild('chatHistory') private chatHistory?: ElementRef<HTMLElement>;
+  @ViewChild('promptInput') private promptInput?: ElementRef<HTMLTextAreaElement>;
 
   students: Student[] = [];
   selectedStudentId = '';
   selectedStudent?: Student;
   sessionId?: string;
-
-  schedule: ScheduleItem[] = [];
-  grades: GradeRecord[] = [];
-  summary?: AcademicSummary;
 
   messages: ChatMessage[] = [];
   sessions: ChatSession[] = [];
@@ -45,17 +41,45 @@ export class AppComponent implements OnInit, AfterViewChecked {
   isLoadingStudent = false;
   isBackendAvailable = true;
   errorMessage = '';
-  private shouldScrollToBottom = false;
+  agentStatus = '';
+  agentRoute = '';
+  clarificationQuestions: string[] = [];
+
+  isAuthenticated = false;
+  authMode: 'login' | 'register' = 'login';
+  authUser?: AuthUser;
+  accessToken = '';
+  authErrorMessage = '';
+  isAuthSubmitting = false;
+  showPassword = false;
+
+  loginForm = {
+    email: 'demo@nexus.ai',
+    password: '123456',
+    rememberMe: true,
+  };
+
+  registerForm = {
+    fullName: '',
+    email: '',
+    password: '',
+    studentId: '',
+  };
 
   readonly quickPrompts = [
     'Đăng ký học phần',
     'Điểm và môn nợ',
     'Lịch học tuần này',
+    'Xét tốt nghiệp',
+    'Điểm A là từ mấy đến mấy?',
   ];
+
+  private readonly storageKey = 'nexus-auth';
+  private shouldScrollToBottom = false;
 
   private readonly fallbackStudent: Student = {
     id: 'SV001',
-    fullName: 'Nguyen Van An',
+    fullName: 'Nguyễn Văn An',
     faculty: 'Công nghệ thông tin',
     major: 'Kỹ thuật phần mềm',
     classCode: '13DHTH01',
@@ -69,21 +93,21 @@ export class AppComponent implements OnInit, AfterViewChecked {
     return !this.sessionId && this.messages.length === 0 && !this.pendingUserMessage && !this.isSending;
   }
 
+  get currentAuthSubtitle(): string {
+    return this.authMode === 'login'
+      ? 'Đăng nhập để truy cập hệ thống tư vấn học vụ dùng AI Core, RAG và tool-use.'
+      : 'Tạo tài khoản để lưu lịch sử chat và gắn với hồ sơ sinh viên mẫu.';
+  }
+
   ngOnInit(): void {
-    this.api.getStudents().subscribe({
-      next: (students) => {
-        this.isBackendAvailable = true;
-        this.errorMessage = '';
-        this.students = students;
-        if (students.length > 0) {
-          this.selectedStudentId = students[0].id;
-          this.selectStudent(students[0].id);
-        }
-      },
-      error: () => {
-        this.useOfflinePreview();
-      },
-    });
+    this.prefetchStudentsForRegister();
+    const stored = this.restoreAuth();
+    if (stored) {
+      this.isAuthenticated = true;
+      this.accessToken = stored.accessToken;
+      this.authUser = stored.user;
+      this.loadInitialData(stored.user.studentId);
+    }
   }
 
   ngAfterViewChecked(): void {
@@ -93,6 +117,58 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
     this.shouldScrollToBottom = false;
     this.scrollToBottom();
+  }
+
+  switchAuthMode(mode: 'login' | 'register'): void {
+    this.authMode = mode;
+    this.authErrorMessage = '';
+  }
+
+  submitLogin(): void {
+    if (this.isAuthSubmitting) {
+      return;
+    }
+
+    this.isAuthSubmitting = true;
+    this.authErrorMessage = '';
+
+    this.api.login(this.loginForm).subscribe({
+      next: (response) => this.handleAuthSuccess(response, this.loginForm.rememberMe),
+      error: (error) => this.handleAuthError(error, 'Không đăng nhập được. Hãy kiểm tra email, mật khẩu hoặc chạy backend.'),
+    });
+  }
+
+  submitRegister(): void {
+    if (this.isAuthSubmitting) {
+      return;
+    }
+
+    this.isAuthSubmitting = true;
+    this.authErrorMessage = '';
+
+    this.api.register({
+      fullName: this.registerForm.fullName,
+      email: this.registerForm.email,
+      password: this.registerForm.password,
+      studentId: this.registerForm.studentId || undefined,
+    }).subscribe({
+      next: (response) => this.handleAuthSuccess(response, true),
+      error: (error) => this.handleAuthError(error, 'Không tạo được tài khoản. Hãy kiểm tra thông tin và thử lại.'),
+    });
+  }
+
+  logout(): void {
+    window.localStorage.removeItem(this.storageKey);
+    this.isAuthenticated = false;
+    this.authUser = undefined;
+    this.accessToken = '';
+    this.sessionId = undefined;
+    this.messages = [];
+    this.sessions = [];
+    this.clearAgentArtifacts();
+    this.prompt = '';
+    this.errorMessage = '';
+    this.authMode = 'login';
   }
 
   selectStudent(studentId: string): void {
@@ -108,32 +184,14 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
     this.loadSessions();
     this.isLoadingStudent = true;
-    this.api.getSchedule(studentId).subscribe({
-      next: (schedule) => (this.schedule = schedule),
-      error: () => this.handleBackendLost('Không tải được thời khóa biểu.'),
-    });
-    this.api.getGrades(studentId).subscribe({
-      next: (grades) => (this.grades = grades),
-      error: () => this.handleBackendLost('Không tải được bảng điểm.'),
-    });
-    this.api.getAcademicSummary(studentId).subscribe({
-      next: (summary) => {
-        this.summary = summary;
-        this.isLoadingStudent = false;
-      },
-      error: () => {
-        this.isLoadingStudent = false;
-        this.handleBackendLost('Không tải được tóm tắt học tập.');
-      },
-    });
+    this.isLoadingStudent = false;
   }
 
   startNewChat(): void {
     this.sessionId = undefined;
     this.messages = [];
     this.pendingUserMessage = undefined;
-    this.cards = [];
-    this.citations = [];
+    this.clearAgentArtifacts();
     this.prompt = '';
     this.errorMessage = '';
     this.queueScrollToBottom();
@@ -142,8 +200,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
   openSession(session: ChatSession): void {
     this.sessionId = session.id;
     this.pendingUserMessage = undefined;
-    this.cards = [];
-    this.citations = [];
+    this.clearAgentArtifacts();
     this.errorMessage = '';
 
     if (!this.isBackendAvailable) {
@@ -159,20 +216,21 @@ export class AppComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  askSchedule(): void {
-    this.usePrompt('Cho em xem lịch học tuần này');
-  }
-
-  askGrades(): void {
-    this.usePrompt('Điểm GPA và môn nợ của em thế nào?');
-  }
-
-  askRegistration(): void {
-    this.usePrompt('Em đăng ký học phần như thế nào?');
-  }
-
   usePrompt(value: string): void {
     this.prompt = value;
+    this.sendMessage();
+  }
+
+  focusPromptInput(): void {
+    this.promptInput?.nativeElement.focus();
+  }
+
+  handlePromptKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Enter' || event.shiftKey) {
+      return;
+    }
+
+    event.preventDefault();
     this.sendMessage();
   }
 
@@ -192,8 +250,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.isSending = true;
     this.errorMessage = '';
     this.prompt = '';
-    this.cards = [];
-    this.citations = [];
+    this.clearAgentArtifacts();
     this.pendingUserMessage = {
       id: crypto.randomUUID(),
       sessionId: this.sessionId ?? 'pending',
@@ -216,6 +273,9 @@ export class AppComponent implements OnInit, AfterViewChecked {
           this.pendingUserMessage = undefined;
           this.citations = response.citations;
           this.cards = response.cards;
+          this.agentStatus = response.status;
+          this.agentRoute = response.route;
+          this.clarificationQuestions = response.clarificationQuestions ?? [];
           this.isSending = false;
           this.loadSessions();
           this.queueScrollToBottom();
@@ -230,18 +290,12 @@ export class AppComponent implements OnInit, AfterViewChecked {
       });
   }
 
-  scheduleFromCard(card: ChatCard): ScheduleItem[] {
-    return Array.isArray(card.data) ? (card.data as ScheduleItem[]) : [];
+  jsonFromCard(card: ChatCard): string {
+    return JSON.stringify(card.data, null, 2);
   }
 
-  gradesFromCard(card: ChatCard): GradeRecord[] {
-    const data = card.data as Partial<GradesCardData>;
-    return Array.isArray(data.grades) ? data.grades : [];
-  }
-
-  summaryFromCard(card: ChatCard): AcademicSummary | null {
-    const data = card.data as Partial<GradesCardData>;
-    return data.summary ?? null;
+  retrievalRowsFromCard(card: ChatCard): unknown[] {
+    return Array.isArray(card.data) ? card.data : [];
   }
 
   trackByMessageId(_: number, message: ChatMessage): string {
@@ -250,6 +304,64 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
   trackBySessionId(_: number, session: ChatSession): string {
     return session.id;
+  }
+
+  trackByStudentId(_: number, student: Student): string {
+    return student.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  private handleAuthSuccess(response: AuthResponse, persist: boolean): void {
+    this.isAuthSubmitting = false;
+    this.isAuthenticated = true;
+    this.accessToken = response.accessToken;
+    this.authUser = response.user;
+    this.authErrorMessage = '';
+
+    if (persist) {
+      window.localStorage.setItem(
+        this.storageKey,
+        JSON.stringify({ accessToken: response.accessToken, user: response.user } satisfies StoredAuth)
+      );
+    } else {
+      window.localStorage.removeItem(this.storageKey);
+    }
+
+    this.loadInitialData(response.user.studentId);
+  }
+
+  private handleAuthError(error: unknown, fallbackMessage: string): void {
+    this.isAuthSubmitting = false;
+    const apiMessage = this.extractApiMessage(error);
+    this.authErrorMessage = apiMessage || fallbackMessage;
+  }
+
+  private extractApiMessage(error: unknown): string {
+    if (typeof error === 'object' && error && 'error' in error) {
+      const payload = (error as { error?: { message?: string } }).error;
+      return payload?.message ?? '';
+    }
+
+    return '';
+  }
+
+  private loadInitialData(preferredStudentId?: string): void {
+    this.api.getStudents().subscribe({
+      next: (students) => {
+        this.isBackendAvailable = true;
+        this.errorMessage = '';
+        this.students = students;
+        const selected = students.find((student) => student.id === preferredStudentId) ?? students[0];
+        if (selected) {
+          this.selectedStudentId = selected.id;
+          this.selectStudent(selected.id);
+        }
+      },
+      error: () => this.useOfflinePreview(),
+    });
   }
 
   private loadSessions(): void {
@@ -263,6 +375,35 @@ export class AppComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  private prefetchStudentsForRegister(): void {
+    this.api.getStudents().subscribe({
+      next: (students) => {
+        this.students = students;
+        if (!this.registerForm.studentId && students.length > 0) {
+          this.registerForm.studentId = students[0].id;
+        }
+      },
+      error: () => {
+        this.students = [this.fallbackStudent];
+        this.registerForm.studentId = this.fallbackStudent.id;
+      },
+    });
+  }
+
+  private restoreAuth(): StoredAuth | null {
+    const raw = window.localStorage.getItem(this.storageKey);
+    if (!raw) {
+      return null;
+    }
+
+    try {
+      return JSON.parse(raw) as StoredAuth;
+    } catch {
+      window.localStorage.removeItem(this.storageKey);
+      return null;
+    }
+  }
+
   private useOfflinePreview(): void {
     this.isBackendAvailable = false;
     this.isLoadingStudent = false;
@@ -270,9 +411,6 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.students = [this.fallbackStudent];
     this.selectedStudentId = this.fallbackStudent.id;
     this.selectedStudent = this.fallbackStudent;
-    this.schedule = [];
-    this.grades = [];
-    this.summary = undefined;
     this.sessions = [];
   }
 
@@ -316,13 +454,20 @@ export class AppComponent implements OnInit, AfterViewChecked {
         sessionId,
         role: 'assistant',
         content:
-          'Backend hiện chưa kết nối nên mình chỉ hiển thị bản xem trước giao diện. Hãy chạy AcademicSupport.Api ở http://localhost:5098 để chatbot trả lời bằng dữ liệu thật.',
+          'Backend hiện chưa kết nối nên mình chỉ hiển thị bản xem trước giao diện. Hãy chạy AcademicSupport.Api để chatbot trả lời bằng AI Core/RAG.',
         createdAt: now,
       },
     ];
+    this.clearAgentArtifacts();
+    this.queueScrollToBottom();
+  }
+
+  private clearAgentArtifacts(): void {
     this.cards = [];
     this.citations = [];
-    this.queueScrollToBottom();
+    this.agentStatus = '';
+    this.agentRoute = '';
+    this.clarificationQuestions = [];
   }
 
   private queueScrollToBottom(): void {

@@ -1,228 +1,344 @@
-<div class="mobile-topbar">
-  <button type="button" aria-label="Mở menu">
-    <span class="material-symbols-outlined">menu</span>
-  </button>
-  <span>EduMind</span>
-  <button type="button" aria-label="Hội thoại mới" (click)="startNewChat()">
-    <span class="material-symbols-outlined">add</span>
-  </button>
-</div>
+<ng-container *ngIf="!isAuthenticated; else chatApp">
+  <main class="auth-shell">
+    <section class="auth-card" [class.register-mode]="authMode === 'register'">
+      <div class="auth-header">
+        <div class="auth-logo">
+          <span class="material-symbols-outlined">hub</span>
+        </div>
+        <h1>Nexus AI</h1>
+        <p>{{ currentAuthSubtitle }}</p>
+      </div>
 
-<aside class="sidebar">
-  <div class="brand">
-    <div class="brand-icon">
-      <span class="material-symbols-outlined filled">neurology</span>
+      <div class="auth-tabs" role="tablist" aria-label="Chọn chế độ xác thực">
+        <button type="button" [class.active]="authMode === 'login'" (click)="switchAuthMode('login')">Đăng nhập</button>
+        <button type="button" [class.active]="authMode === 'register'" (click)="switchAuthMode('register')">Đăng ký</button>
+      </div>
+
+      <p class="auth-error" *ngIf="authErrorMessage">{{ authErrorMessage }}</p>
+
+      <form *ngIf="authMode === 'login'" class="auth-form" (ngSubmit)="submitLogin()">
+        <div class="field">
+          <label for="login-email">Email</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">mail</span>
+            <input id="login-email" name="loginEmail" type="email" [(ngModel)]="loginForm.email" placeholder="demo@nexus.ai" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="login-password">Mật khẩu</label>
+            <button type="button" class="text-button" (click)="showPassword = !showPassword">
+              {{ showPassword ? 'Ẩn' : 'Hiện' }}
+            </button>
+          </div>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">lock</span>
+            <input
+              id="login-password"
+              name="loginPassword"
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="loginForm.password"
+              placeholder="123456"
+              required
+            >
+          </div>
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" name="rememberMe" [(ngModel)]="loginForm.rememberMe">
+          <span>Ghi nhớ đăng nhập</span>
+        </label>
+
+        <button class="primary-action" type="submit" [disabled]="isAuthSubmitting">
+          <span>{{ isAuthSubmitting ? 'Đang xử lý...' : 'Đăng nhập' }}</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+
+        <p class="demo-hint">Tài khoản demo: demo@nexus.ai / 123456</p>
+      </form>
+
+      <form *ngIf="authMode === 'register'" class="auth-form" (ngSubmit)="submitRegister()">
+        <div class="field">
+          <label for="full-name">Họ và tên</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">person</span>
+            <input id="full-name" name="fullName" type="text" [(ngModel)]="registerForm.fullName" placeholder="Nguyễn Văn A" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="register-email">Email</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">mail</span>
+            <input id="register-email" name="registerEmail" type="email" [(ngModel)]="registerForm.email" placeholder="name@student.huit.edu.vn" required>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="register-password">Mật khẩu</label>
+          <div class="input-wrap">
+            <span class="material-symbols-outlined">lock</span>
+            <input
+              id="register-password"
+              name="registerPassword"
+              [type]="showPassword ? 'text' : 'password'"
+              [(ngModel)]="registerForm.password"
+              placeholder="Tối thiểu 6 ký tự"
+              required
+            >
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="register-student">Hồ sơ sinh viên mẫu</label>
+          <div class="input-wrap select-wrap">
+            <span class="material-symbols-outlined">badge</span>
+            <select id="register-student" name="registerStudent" [(ngModel)]="registerForm.studentId">
+              <option *ngFor="let student of students; trackBy: trackByStudentId" [value]="student.id">
+                {{ student.id }} - {{ student.fullName }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <label class="check-row">
+          <input type="checkbox" checked disabled>
+          <span>Tôi đồng ý dùng hồ sơ demo để kiểm thử luồng tư vấn học vụ.</span>
+        </label>
+
+        <button class="primary-action" type="submit" [disabled]="isAuthSubmitting">
+          <span>{{ isAuthSubmitting ? 'Đang tạo...' : 'Đăng ký' }}</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </form>
+    </section>
+
+    <div class="floating-notes" aria-hidden="true">
+      <div></div>
+      <div></div>
     </div>
-    <div>
-      <h1>EduMind</h1>
-      <p>Sẵn sàng hỗ trợ</p>
-    </div>
-  </div>
+  </main>
+</ng-container>
 
-  <div class="sidebar-scroll">
-    <div class="section-label">Hội thoại</div>
-    <button type="button" class="nav-link" [class.active]="!sessionId" (click)="startNewChat()">
-      <span class="material-symbols-outlined">add_comment</span>
-      <span>Hội thoại mới</span>
+<ng-template #chatApp>
+  <div class="mobile-topbar">
+    <button type="button" aria-label="Mở menu">
+      <span class="material-symbols-outlined">menu</span>
     </button>
-    <button
-      type="button"
-      class="nav-link conversation-link"
-      *ngFor="let session of sessions; trackBy: trackBySessionId"
-      [class.active]="session.id === sessionId"
-      (click)="openSession(session)"
-      [title]="session.title"
-    >
-      <span class="material-symbols-outlined">chat</span>
-      <span>{{ session.title }}</span>
-    </button>
-
-  </div>
-
-  <div class="sidebar-footer">
-    <button type="button" class="footer-link">
-      <span class="material-symbols-outlined">account_circle</span>
-      Tài khoản
-    </button>
-  </div>
-</aside>
-
-<main class="chat-main" [class.is-empty-chat]="isEmptyChat">
-  <header class="desktop-topbar">
-    <div class="title-wrap">
-      <h2>Tư vấn học vụ</h2>
-      <span [class.offline]="!isBackendAvailable">
-        {{ isBackendAvailable ? 'Backend đã kết nối' : 'Chưa kết nối backend' }}
-      </span>
-    </div>
-    <button type="button" class="new-chat" (click)="startNewChat()">
+    <span>Nexus AI</span>
+    <button type="button" aria-label="Hội thoại mới" (click)="startNewChat()">
       <span class="material-symbols-outlined">add</span>
-      Hội thoại mới
     </button>
-  </header>
+  </div>
 
-  <section #chatHistory class="chat-history custom-scrollbar">
-    <div class="thread">
-      <p class="connection-note" *ngIf="!isBackendAvailable">
-        {{ errorMessage || 'Bạn vẫn có thể xem giao diện và nhập tiếng Việt. Chạy backend để nhận phản hồi từ API.' }}
-      </p>
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">
+        <span class="material-symbols-outlined filled">neurology</span>
+      </div>
+      <div>
+        <h1>Nexus AI</h1>
+        <p>AI Core + RAG + Tool-use</p>
+      </div>
+    </div>
 
-      <ng-container *ngIf="isEmptyChat">
-        <div class="empty-state">
-          <h3>Bạn đang cần hỗ trợ gì?</h3>
+    <div class="sidebar-scroll custom-scrollbar">
+      <div class="section-label">Hồ sơ sinh viên</div>
+      <div class="student-mini">
+        <label for="student-select">Đang tư vấn cho</label>
+        <select id="student-select" [(ngModel)]="selectedStudentId" (ngModelChange)="selectStudent($event)">
+          <option *ngFor="let student of students; trackBy: trackByStudentId" [value]="student.id">
+            {{ student.id }} - {{ student.fullName }}
+          </option>
+        </select>
+        <p *ngIf="selectedStudent">
+          {{ selectedStudent.classCode }} · {{ selectedStudent.major }}
+        </p>
+      </div>
+
+      <div class="section-label">Hội thoại</div>
+      <button type="button" class="nav-link" [class.active]="!sessionId" (click)="startNewChat()">
+        <span class="material-symbols-outlined">add_comment</span>
+        <span>Hội thoại mới</span>
+      </button>
+      <button
+        type="button"
+        class="nav-link conversation-link"
+        *ngFor="let session of sessions; trackBy: trackBySessionId"
+        [class.active]="session.id === sessionId"
+        (click)="openSession(session)"
+        [title]="session.title"
+      >
+        <span class="material-symbols-outlined">chat</span>
+        <span>{{ session.title }}</span>
+      </button>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="account-box">
+        <span class="material-symbols-outlined">account_circle</span>
+        <div>
+          <strong>{{ authUser?.fullName }}</strong>
+          <p>{{ authUser?.email }}</p>
         </div>
-      </ng-container>
+      </div>
+      <button type="button" class="footer-link" (click)="logout()">
+        <span class="material-symbols-outlined">logout</span>
+        Đăng xuất
+      </button>
+    </div>
+  </aside>
 
-      <ng-container *ngFor="let message of messages; trackBy: trackByMessageId">
-        <div class="user-message" *ngIf="message.role === 'user'">
-          <div class="bubble">{{ message.content }}</div>
+  <main class="chat-main" [class.is-empty-chat]="isEmptyChat">
+    <header class="desktop-topbar">
+      <div class="title-wrap">
+        <h2>Tư vấn học vụ</h2>
+        <span [class.offline]="!isBackendAvailable">
+          {{ isBackendAvailable ? 'AI Core đã kết nối' : 'Chưa kết nối backend' }}
+        </span>
+        <span *ngIf="agentRoute">{{ agentRoute }} · {{ agentStatus }}</span>
+      </div>
+      <button type="button" class="new-chat" (click)="startNewChat()">
+        <span class="material-symbols-outlined">add</span>
+        Hội thoại mới
+      </button>
+    </header>
+
+    <section #chatHistory class="chat-history custom-scrollbar">
+      <div class="thread">
+        <p class="connection-note" *ngIf="!isBackendAvailable">
+          {{ errorMessage || 'Bạn vẫn có thể xem giao diện và nhập tiếng Việt. Chạy backend để nhận phản hồi từ API.' }}
+        </p>
+
+        <ng-container *ngIf="isEmptyChat">
+          <div class="empty-state">
+            <h3>Bạn đang cần hỗ trợ gì?</h3>
+            <p>Hỏi về quy chế học vụ, lịch học, điểm/GPA, môn nợ, đăng ký học phần hoặc điều kiện tốt nghiệp.</p>
+          </div>
+        </ng-container>
+
+        <ng-container *ngFor="let message of messages; trackBy: trackByMessageId">
+          <div class="user-message" *ngIf="message.role === 'user'">
+            <div class="bubble">{{ message.content }}</div>
+          </div>
+
+          <div class="assistant-message" *ngIf="message.role === 'assistant'">
+            <div class="avatar">
+              <span class="material-symbols-outlined filled">neurology</span>
+            </div>
+            <div class="assistant-body prose">
+              <p class="message-text">{{ message.content }}</p>
+            </div>
+          </div>
+        </ng-container>
+
+        <div class="user-message" *ngIf="pendingUserMessage">
+          <div class="bubble">{{ pendingUserMessage.content }}</div>
         </div>
 
-        <div class="assistant-message" *ngIf="message.role === 'assistant'">
+        <div class="assistant-message" *ngIf="cards.length > 0 || citations.length > 0 || clarificationQuestions.length > 0">
           <div class="avatar">
             <span class="material-symbols-outlined filled">neurology</span>
           </div>
           <div class="assistant-body prose">
-            <p>{{ message.content }}</p>
-          </div>
-        </div>
-      </ng-container>
-
-      <div class="user-message" *ngIf="pendingUserMessage">
-        <div class="bubble">{{ pendingUserMessage.content }}</div>
-      </div>
-
-      <div class="assistant-message" *ngIf="cards.length > 0 || citations.length > 0">
-        <div class="avatar">
-          <span class="material-symbols-outlined filled">neurology</span>
-        </div>
-        <div class="assistant-body prose">
-          <ng-container *ngFor="let card of cards">
-            <section *ngIf="card.type === 'schedule'" class="tool-block">
-              <p><strong>{{ card.title }}</strong></p>
-              <div class="table-card">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Môn học</th>
-                      <th>Giảng viên</th>
-                      <th>Thứ</th>
-                      <th>Tiết</th>
-                      <th>Phòng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let item of scheduleFromCard(card)">
-                      <td>{{ item.courseName }}</td>
-                      <td>{{ item.lecturer }}</td>
-                      <td>{{ item.dayOfWeek }}</td>
-                      <td>{{ item.startPeriod }} - {{ item.endPeriod }}</td>
-                      <td>{{ item.room }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <section class="agent-meta" *ngIf="agentRoute || agentStatus">
+              <span>Route: {{ agentRoute || 'unknown' }}</span>
+              <span>Status: {{ agentStatus || 'unknown' }}</span>
             </section>
 
-            <section *ngIf="card.type === 'grades'" class="tool-block">
-              <p><strong>{{ card.title }}</strong></p>
-              <p class="summary-line" *ngIf="summaryFromCard(card) as cardSummary">
-                GPA hệ 10: <strong>{{ cardSummary.gpa10 }}</strong>,
-                GPA hệ 4: <strong>{{ cardSummary.gpa4 }}</strong>,
-                tín chỉ nợ: <strong>{{ cardSummary.debtCredits }}</strong>
-              </p>
-              <div class="table-card">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Môn học</th>
-                      <th>Quá trình</th>
-                      <th>Cuối kỳ</th>
-                      <th>Tổng</th>
-                      <th>Trạng thái</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr *ngFor="let grade of gradesFromCard(card)" [class.warning-row]="grade.isRetakeNeeded">
-                      <td>{{ grade.courseName }}</td>
-                      <td>{{ grade.processScore }}</td>
-                      <td>{{ grade.finalScore }}</td>
-                      <td>{{ grade.totalScore }}</td>
-                      <td>{{ grade.isRetakeNeeded ? 'Cần học lại' : 'Đạt' }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+            <section class="tool-block" *ngIf="clarificationQuestions.length > 0">
+              <p><strong>Cần làm rõ thêm</strong></p>
+              <ul>
+                <li *ngFor="let question of clarificationQuestions; trackBy: trackByIndex">{{ question }}</li>
+              </ul>
             </section>
-          </ng-container>
 
-          <ul class="citations" *ngIf="citations.length > 0">
-            <li *ngFor="let citation of citations">
-              <strong>{{ citation.title }}</strong>
-              <span>{{ citation.source }}</span>
-              <p>{{ citation.excerpt }}</p>
-            </li>
-          </ul>
+            <ng-container *ngFor="let card of cards">
+              <section *ngIf="card.type === 'tool_results'" class="tool-block json-card">
+                <p><strong>{{ card.title }}</strong></p>
+                <pre>{{ jsonFromCard(card) }}</pre>
+              </section>
 
-          <div class="response-actions bordered">
-            <button type="button" title="Sao chép">
-              <span class="material-symbols-outlined">content_copy</span>
-            </button>
-            <button type="button" title="Hữu ích">
-              <span class="material-symbols-outlined">thumb_up</span>
-            </button>
-            <button type="button" title="Chưa đúng">
-              <span class="material-symbols-outlined">thumb_down</span>
-            </button>
+              <section *ngIf="card.type === 'retrieval_results'" class="tool-block retrieval-card">
+                <p><strong>{{ card.title }}</strong></p>
+                <div class="retrieval-list">
+                  <pre *ngFor="let row of retrievalRowsFromCard(card); trackBy: trackByIndex">{{ row | json }}</pre>
+                </div>
+              </section>
+            </ng-container>
+
+            <ul class="citations" *ngIf="citations.length > 0">
+              <li *ngFor="let citation of citations">
+                <strong>{{ citation.title }}</strong>
+                <span>{{ citation.source }}</span>
+                <p>{{ citation.excerpt }}</p>
+              </li>
+            </ul>
+
+            <div class="response-actions bordered">
+              <button type="button" title="Sao chép">
+                <span class="material-symbols-outlined">content_copy</span>
+              </button>
+              <button type="button" title="Hữu ích">
+                <span class="material-symbols-outlined">thumb_up</span>
+              </button>
+              <button type="button" title="Chưa đúng">
+                <span class="material-symbols-outlined">thumb_down</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="assistant-message typing-row" *ngIf="isSending">
+          <div class="avatar muted">
+            <span class="material-symbols-outlined filled">neurology</span>
+          </div>
+          <div class="typing">
+            <span></span>
+            <span></span>
+            <span></span>
+            <em>Nexus AI đang gọi AI Core/RAG...</em>
           </div>
         </div>
       </div>
+    </section>
 
-      <div class="assistant-message typing-row" *ngIf="isSending">
-        <div class="avatar muted">
-          <span class="material-symbols-outlined filled">neurology</span>
-        </div>
-        <div class="typing">
-          <span></span>
-          <span></span>
-          <span></span>
-          <em>HUIT AI đang kiểm tra dữ liệu...</em>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="composer-wrap">
-    <div class="composer-inner">
-      <div class="prompt-chips">
-        <button type="button" *ngFor="let item of quickPrompts" (click)="usePrompt(item)">
-          {{ item }}
-        </button>
-      </div>
-
-      <form class="composer" (ngSubmit)="sendMessage()">
-        <input
-          name="prompt"
-          [(ngModel)]="prompt"
-          placeholder="Nhập yêu cầu của bạn tại đây"
-          autocomplete="off"
-        >
-        <div class="composer-actions">
-          <div>
-            <button type="button" class="icon-button" aria-label="Đính kèm tệp">
-              <span class="material-symbols-outlined">attach_file</span>
-            </button>
-            <button type="button" class="icon-button" aria-label="Dùng công cụ">
-              <span class="material-symbols-outlined">extension</span>
-            </button>
-          </div>
-          <button type="submit" class="send-button" [disabled]="isSending || !prompt.trim()" aria-label="Gửi">
-            <span class="material-symbols-outlined">send</span>
+    <section class="composer-wrap">
+      <div class="composer-inner">
+        <div class="prompt-chips">
+          <button type="button" *ngFor="let item of quickPrompts" (click)="usePrompt(item)">
+            {{ item }}
           </button>
         </div>
-      </form>
 
-      <p class="disclaimer">HUIT AI có thể mắc lỗi. Hãy đối chiếu thông tin quan trọng với phòng đào tạo hoặc cố vấn học tập.</p>
-    </div>
-  </section>
-</main>
+        <form class="composer" (click)="focusPromptInput()" (ngSubmit)="sendMessage()">
+          <textarea
+            #promptInput
+            name="prompt"
+            [(ngModel)]="prompt"
+            placeholder="Nhập yêu cầu của bạn tại đây"
+            autocomplete="off"
+            rows="1"
+            (keydown)="handlePromptKeydown($event)"
+          ></textarea>
+          <div class="composer-actions">
+            <div>
+              <button type="button" class="icon-button" aria-label="Đính kèm tệp">
+                <span class="material-symbols-outlined">attach_file</span>
+              </button>
+              <button type="button" class="icon-button" aria-label="Dùng công cụ">
+                <span class="material-symbols-outlined">extension</span>
+              </button>
+            </div>
+            <button type="submit" class="send-button" [disabled]="isSending || !prompt.trim()" aria-label="Gửi">
+              <span class="material-symbols-outlined">send</span>
+            </button>
+          </div>
+        </form>
+
+        <p class="disclaimer">Nexus AI có thể mắc lỗi. Hãy đối chiếu thông tin quan trọng với phòng đào tạo hoặc cố vấn học tập.</p>
+      </div>
+    </section>
+  </main>
+</ng-template>

@@ -54,6 +54,32 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface AuthUser {
+  id: string;
+  fullName: string;
+  email: string;
+  studentId: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: AuthUser;
+  student: Student;
+}
+
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  studentId?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+  rememberMe: boolean;
+}
+
 export interface ChatSession {
   id: string;
   studentId: string;
@@ -69,7 +95,7 @@ export interface ChatCitation {
 }
 
 export interface ChatCard {
-  type: 'schedule' | 'grades' | string;
+  type: 'schedule' | 'grades' | 'student' | 'tool_results' | 'retrieval_results' | string;
   title: string;
   data: unknown;
 }
@@ -80,6 +106,12 @@ export interface ChatResponse {
   assistantMessage: ChatMessage;
   citations: ChatCitation[];
   cards: ChatCard[];
+  status: string;
+  route: string;
+  needsClarification: boolean;
+  clarificationQuestions?: string[];
+  error?: unknown;
+  agent?: unknown;
 }
 
 export interface ChatRequest {

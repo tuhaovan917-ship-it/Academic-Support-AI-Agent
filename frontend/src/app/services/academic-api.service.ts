@@ -5,11 +5,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AcademicSummary,
+  AuthResponse,
   ChatMessage,
   ChatRequest,
   ChatResponse,
   ChatSession,
   GradeRecord,
+  LoginRequest,
+  RegisterRequest,
   ScheduleItem,
   Student,
 } from '../models/academic.models';
@@ -19,6 +22,14 @@ export class AcademicApiService {
   private readonly apiBaseUrl = environment.apiBaseUrl;
 
   constructor(private readonly http: HttpClient) {}
+
+  register(request: RegisterRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/auth/register`, request);
+  }
+
+  login(request: LoginRequest): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiBaseUrl}/auth/login`, request);
+  }
 
   getStudents(): Observable<Student[]> {
     return this.http.get<Student[]>(`${this.apiBaseUrl}/students`);
