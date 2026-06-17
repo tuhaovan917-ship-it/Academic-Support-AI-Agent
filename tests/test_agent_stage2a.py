@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
+
+os.environ["LLM_PROVIDER"] = "mock"
+os.environ["MOCK_LLM_MODE"] = "template"
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 if str(PROJECT_ROOT) not in sys.path:
@@ -21,6 +25,7 @@ def test_policy_retrieval_graduation_condition() -> None:
     assert response.route == "policy_retrieval"
     assert response.citations
     assert any("Điều 39" in citation for citation in response.citations)
+    assert response.llm["provider"] == "mock"
 
 
 def test_form_retrieval_graduation_application() -> None:
@@ -37,6 +42,7 @@ def test_schedule_requires_student_id_then_uses_memory() -> None:
     assert first.status == "need_clarification"
     assert first.needs_clarification
     assert "MSSV" in first.answer
+    assert first.llm == {}
 
     second = run_agent("SV001", session_id=session_id)
     assert_answered(second)

@@ -2,12 +2,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from src.tools import MockStudentAPI
+from src.tools.student_client import StudentClient, get_student_client
 
 
 class ToolAgent:
-    def __init__(self, api: MockStudentAPI | None = None) -> None:
-        self.api = api or MockStudentAPI()
+    def __init__(self, api: StudentClient | None = None) -> None:
+        self.api = api or get_student_client()
 
     def run(self, tool_name: str, student_id: str | None, **kwargs: Any) -> dict[str, Any]:
         if not student_id:
