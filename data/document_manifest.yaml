@@ -1,0 +1,356 @@
+version: 1
+school: HUIT
+created_for: task_1_2_preprocessing_and_vectorization
+
+policies:
+  source_priority:
+    current_regulation: 100
+    current_guidance: 80
+    current_form: 60
+    faq: 40
+    uncertain_or_legacy: 20
+  current_policy:
+    default_current_only: true
+    allow_legacy_when:
+      - user_asks_for_history_or_changes
+      - no_current_source_exists_for_topic
+    legacy_answer_requirement: warn_user_and_cite_source_status
+  review_gate:
+    block_vector_upsert_when:
+      - requires_ocr
+      - extraction_quality_low
+      - legal_structure_missing
+      - table_structure_uncertain
+      - manual_review_required
+    allow_vector_upsert_when:
+      - extraction_quality_ok
+      - manual_review_approved
+  citation_requirement:
+    include_document_title: true
+    include_document_code: true
+    include_issued_date: true
+    include_page: true
+    include_article_clause_point_when_available: true
+  table_handling:
+    preferred_formats:
+      - markdown_table
+      - json_rows
+    preserve_table_caption: true
+    preserve_page_number: true
+    manual_review_when_table_detected_in_ocr: true
+
+embedding_benchmark:
+  status: planned
+  candidates:
+    - BAAI/bge-m3
+    - intfloat/multilingual-e5-base
+    - intfloat/multilingual-e5-large
+    - vietnamese-bi-encoder
+  metrics:
+    - top_1_retrieval_accuracy
+    - top_3_retrieval_accuracy
+    - correct_article_clause_retrieval
+    - correct_form_retrieval
+    - current_source_priority
+    - local_runtime_cost
+
+critical_rules:
+  - rule_id: graduation_classification_5_percent_retake
+    document_id: huit_qd_3344_2025
+    expected_location_hint: "Dieu 40"
+    requirement: "Chunking must keep the graduation classification rule together with the constraint about lowering one classification level when repeated-study credits exceed 5 percent."
+    audit_required: true
+
+parser_profiles:
+  legal_articles:
+    chunk_strategy: article_then_clause
+    structure_markers:
+      - Chuong
+      - Dieu
+      - Khoan
+      - Diem
+    preserve_tables: true
+  guidance_steps:
+    chunk_strategy: section_then_procedure_step
+    structure_markers:
+      - numbered_section
+      - Buoc
+      - Luu y
+    preserve_tables: true
+  form_docx:
+    chunk_strategy: form_summary_and_notes
+    keep_blank_fields: false
+    generate_preview: true
+    preview_formats:
+      - markdown
+      - html
+  faq_jsonl:
+    chunk_strategy: one_question_answer_per_chunk
+  scanned_legal_pdf:
+    chunk_strategy: ocr_then_manual_review_then_legal_articles
+    requires_ocr: true
+    vector_upsert_before_review: false
+
+documents:
+  - document_id: huit_qd_3344_2025
+    path: data/raw/qd-3344-ngay-05-09-quy-che-dao-tao-dai-hoc-theo-he-thong-tin-chi_last.pdf
+    title: "Quy che dao tao dai hoc theo he thong tin chi"
+    document_code: "QD-3344"
+    decision_number: "3344/QĐ-DCT"
+    issued_date: "2025-09-05"
+    source_type: regulation
+    parser_profile: legal_articles
+    priority: highest
+    priority_score: 100
+    is_current: true
+    superseded_risk: false
+    requires_ocr: false
+    requires_manual_review: false
+    expected_pages: 43
+    extraction_notes: "Primary current regulation; text layer extraction was sampled successfully."
+
+  - document_id: huit_qd_2658_student_affairs_2023
+    path: data/raw/20230913-qd2658-ve-viec-ban-hanh-quy-che-cong-tac-sinh-vien-cua-truong-dai-hoc-cong-thuong-tp-hcm.pdf
+    title: "Quy che cong tac sinh vien cua Truong Dai hoc Cong Thuong TP.HCM"
+    document_code: "QD-2658"
+    decision_number: "2658/QĐ-DCT"
+    issued_date: "2023-09-13"
+    source_type: regulation
+    parser_profile: scanned_legal_pdf
+    priority: high
+    priority_score: 70
+    is_current: uncertain
+    superseded_risk: true
+    requires_ocr: true
+    requires_manual_review: true
+    expected_pages: 27
+    extraction_notes: "Produced by HP Scan; pdftotext sample returned blank pages, so OCR and manual review are required before vector upsert."
+
+  - document_id: huit_qd_3230_foreign_language_outcomes_2023
+    path: data/raw/qð3230-ngay-31-10-2023-quy-dinh-chuan-dau-ra-ngoai-ngu-doi-voi-sinh-vien-dai-hoc.pdf
+    title: "Quy dinh chuan dau ra ngoai ngu doi voi sinh vien dai hoc"
+    document_code: "QD-3230"
+    decision_number: "3230/QĐ-DCT"
+    issued_date: "2023-10-31"
+    source_type: regulation
+    parser_profile: scanned_legal_pdf
+    priority: legacy
+    priority_score: 20
+    is_current: uncertain
+    superseded_risk: true
+    requires_ocr: true
+    requires_manual_review: true
+    expected_pages: 17
+    warning_note: "Uses 2023 legal basis and must be checked against QD-3344/2025 before being used as a current rule."
+    extraction_notes: "Produced by EPSON Scan; pdftotext sample returned blank pages."
+
+  - document_id: huit_qd_3297_it_outcomes_2023
+    path: data/raw/qd3297-ngay-07112023-quy-dinh-chuan-ky-nang-su-dung-cong-nghe-thong-tin-cntt-doi-voi-sinh-vien-khong-chuyen-nganh-cntt-nam-2023.pdf
+    title: "Quy dinh chuan ky nang su dung CNTT doi voi sinh vien khong chuyen nganh CNTT"
+    document_code: "QD-3297"
+    decision_number: "3297/QĐ-DCT"
+    issued_date: "2023-11-07"
+    source_type: regulation
+    parser_profile: scanned_legal_pdf
+    priority: legacy
+    priority_score: 20
+    is_current: uncertain
+    superseded_risk: true
+    requires_ocr: true
+    requires_manual_review: true
+    expected_pages: 3
+    warning_note: "Uses 2023 legal basis and must be checked against QD-3344/2025 before being used as a current rule."
+    extraction_notes: "Produced by EPSON Scan; pdftotext sample returned blank pages."
+
+  - document_id: huit_guidance_course_registration_2026
+    path: data/raw/hoc-vu_dangkyhocphan_2026.pdf
+    title: "Huong dan hoc vu 2026 - Dang ky hoc phan, dang ky hoc lai, rut hoc phan"
+    source_type: guidance
+    parser_profile: guidance_steps
+    priority: high
+    priority_score: 80
+    is_current: true
+    superseded_risk: false
+    requires_ocr: false
+    requires_manual_review: false
+    expected_pages: 2
+    related_procedures:
+      - dang_ky_hoc_phan
+      - dang_ky_hoc_lai
+      - hoc_cai_thien
+      - rut_hoc_phan
+    related_forms:
+      - BM10
+    extraction_notes: "Text layer extraction was sampled successfully; procedure steps and timing must be preserved."
+
+  - document_id: huit_guidance_academic_status_2026
+    path: data/raw/hoc-vu_hocvu_2026.pdf
+    title: "Huong dan hoc vu 2026 - Tam dung hoc tap, hoc lai, thoi hoc, chuyen nganh"
+    source_type: guidance
+    parser_profile: guidance_steps
+    priority: high
+    priority_score: 80
+    is_current: true
+    superseded_risk: false
+    requires_ocr: false
+    requires_manual_review: false
+    expected_pages: 4
+    related_procedures:
+      - tam_dung_hoc_tap
+      - tro_lai_hoc_tap
+      - thoi_hoc
+      - chuyen_nganh
+    related_forms:
+      - BM02
+      - BM03
+    extraction_notes: "Text layer extraction was sampled successfully; preserve steps, conditions, evidence documents, and processing time."
+
+  - document_id: huit_guidance_academic_results_2026
+    path: data/raw/hoc-vu_ketquahoctap_2026.pdf
+    title: "Huong dan hoc vu 2026 - Ket qua hoc tap"
+    source_type: guidance
+    parser_profile: guidance_steps
+    priority: high
+    priority_score: 80
+    is_current: true
+    superseded_risk: false
+    requires_ocr: false
+    requires_manual_review: false
+    expected_pages: 2
+    related_procedures:
+      - xem_ket_qua_hoc_tap
+      - phuc_khao
+      - mien_giam_cong_nhan_diem
+    related_forms:
+      - BM11
+    extraction_notes: "Tables or score-related structures must be preserved when detected."
+
+  - document_id: huit_form_bm02_return_to_study
+    path: data/raw/bm02_phieu-dang-ky-tro-lai-hoc-tap.docx
+    title: "Phieu dang ky tro lai hoc tap"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM02
+    related_procedure: tro_lai_hoc_tap
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_form_bm03_change_major
+    path: data/raw/bm03_phieu-de-nghi-chuyen-nganh-dao-tao.docx
+    title: "Phieu de nghi chuyen nganh dao tao"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM03
+    related_procedure: chuyen_nganh
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_form_bm04_dual_program
+    path: data/raw/bm04_phieu-dang-ky-hoc-cung-luc-hai-chuong-trinh.docx
+    title: "Phieu dang ky hoc cung luc hai chuong trinh"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM04
+    related_procedure: hoc_cung_luc_hai_chuong_trinh
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_form_bm08_change_training_system
+    path: data/raw/bm08_phieu-de-nghi-chuyen-he-dao-tao.docx
+    title: "Phieu de nghi chuyen he dao tao"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM08
+    related_procedure: chuyen_he_dao_tao
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_form_bm09_exam_postponement
+    path: data/raw/bm09_phieu-dang-ky-hoan-thi-do-vang-thi-cuoi-ky.docx
+    title: "Phieu dang ky hoan thi do vang thi cuoi ky"
+    source_type: form
+    parser_profile: form_docx
+    priority: legacy
+    priority_score: 20
+    is_current: uncertain
+    superseded_risk: true
+    requires_manual_review: true
+    form_code: BM09
+    related_procedure: hoan_thi
+    generate_preview: true
+    downloadable: true
+    warning_note: "Contains old HUFI website/domain information; must warn users or confirm a newer form before treating it as current."
+
+  - document_id: huit_form_bm10_cancel_course
+    path: data/raw/bm10_phieu-de-nghi-huy-hoc-phan.docx
+    title: "Phieu de nghi huy hoc phan"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM10
+    related_procedure: huy_hoc_phan
+    generate_preview: true
+    downloadable: true
+    extraction_notes: "Sample extraction found important notes about optional courses, submission to Phong Dao tao, and checking results on the student portal."
+
+  - document_id: huit_form_bm11_exemption_credit_recognition
+    path: data/raw/bm11_phieu-dang-ky-xet-mien-giam-va-cong-nhan-diem.docx
+    title: "Phieu dang ky xet mien giam va cong nhan diem"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM11
+    related_procedure: mien_giam_cong_nhan_diem
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_form_bm12_graduation_application
+    path: data/raw/bm12_phieu-dang-ky-xet-tot-nghiep.docx
+    title: "Phieu dang ky xet tot nghiep"
+    source_type: form
+    parser_profile: form_docx
+    priority: medium
+    priority_score: 60
+    is_current: true
+    requires_manual_review: false
+    form_code: BM12
+    related_procedure: xet_tot_nghiep
+    generate_preview: true
+    downloadable: true
+
+  - document_id: huit_faq_user_collected
+    path: data/raw/faq_huit.jsonl
+    title: "FAQ HUIT tu thu thap"
+    source_type: faq
+    parser_profile: faq_jsonl
+    priority: faq
+    priority_score: 40
+    is_current: true
+    is_official: false
+    created_by: user
+    requires_ocr: false
+    requires_manual_review: false
+    use_as_primary_legal_source: false
+    extraction_notes: "Use for intent coverage and student-friendly phrasing; legal answers must prefer official regulations or guidance when available."

@@ -1,1 +1,1 @@
-"""Core modules for the HCMUT academic support agent."""
+"""HUIT academic assistant core modules."""

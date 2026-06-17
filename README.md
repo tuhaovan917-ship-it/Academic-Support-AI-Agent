@@ -1,182 +1,397 @@
-# Academic Support AI Agent
+# HUIT Academic Support RAG & Agent
 
-Dự án này triển khai **Task 1.2: Tiền xử lý và Vector hóa** cho dữ liệu sổ tay sinh viên HCMUT/NTTU.
+Dự án xây dựng bộ dữ liệu, Vector Database và lõi AI Agent tư vấn học vụ HUIT theo đề bài `Tài liệu tham khảo/TTS_T02_ChatBot.docx`.
 
-Mục tiêu của Task 1.2:
+Hiện trạng:
 
-- bóc tách text từ PDF;
-- giữ cấu trúc điều khoản/mục khi chunking để LLM không trả lời sai luật;
-- enrich metadata đủ dùng cho truy hồi;
-- vector hóa dữ liệu và lưu vào ChromaDB local.
+- **Task 1.1**: Hoàn thành corpus học vụ.
+- **Task 1.2**: Hoàn thành tiền xử lý, chunking theo cấu trúc điều/khoản/mục, vector hóa và audit retrieval.
+- **Stage 2A của Task 2**: Hoàn thành scaffold Multi-Agent rule-based với mock tools, chưa gọi LLM thật.
 
-## Cấu trúc chính
+Kiến trúc dữ liệu đi theo hướng RAG trong bài `Tài liệu tham khảo/2005.11401v4.pdf`: tài liệu học vụ được đưa vào dense vector index, retriever lấy top-k đoạn liên quan, agent dùng các đoạn này làm căn cứ trả lời có trích dẫn.
+
+Stage 2A bám theo hướng LLM-based autonomous agent trong `Tài liệu tham khảo/2308.11432v7.pdf`: agent có planner, memory ngắn hạn, retriever/tool action và critic kiểm tra đầu ra.
+
+## Trạng Thái Hiện Tại
+
+- Vector DB local: `huit_db/`
+- Chroma collection: `huit_academic_chunks`
+- Embedding model: `BAAI/bge-m3`
+- Tổng chunks trong DB: `141`
+- Retrieval audit: `100/100` pass
+- Active audit cases: `96`
+- Pending-source audit cases: `3`
+- Discarded-source audit cases: `1`
+
+`huit_db/` là artifact local và được ignore khỏi git. Có thể rebuild từ dữ liệu và script trong repo.
+
+## Input Task 1
+
+Nguồn dữ liệu chính nằm trong `data/raw/`:
+
+- QĐ-3344 năm 2025: Quy chế đào tạo đại học theo hệ thống tín chỉ, nguồn luật hiện hành ưu tiên cao nhất.
+- Hướng dẫn học vụ 2026:
+  - Đăng ký học phần.
+  - Học vụ: tạm dừng, học lại, thôi học, chuyển ngành.
+  - Kết quả học tập và tốt nghiệp.
+- Biểu mẫu: BM02, BM03, BM04, BM08, BM09, BM10, BM11, BM12.
+- FAQ tự thu thập: `faq_huit.jsonl`.
+- Nguồn scan/pending: QĐ-2658, QĐ-3297.
+
+Tài liệu tham khảo nằm trong `Tài liệu tham khảo/`:
+
+- `TTS_T02_ChatBot.docx`
+- `2005.11401v4.pdf`
+- `2308.11432v7.pdf`
+
+## Output Task 1
+
+Artifact quan trọng:
+
+- `data/document_manifest.yaml`: manifest điều phối nguồn, độ ưu tiên, trạng thái current/pending/discarded.
+- `data/processed_chunks.jsonl`: chunks sau khi tách cấu trúc.
+- `data/processed_chunks_enriched.jsonl`: chunks kèm metadata, citation, hash, priority.
+- `data/forms_preview/`: bản xem nhanh cho biểu mẫu.
+- `data/review/approved_chunks.jsonl`: chunks được phê duyệt để vector hóa.
+- `data/review/audit_cases.jsonl`: 100 câu hỏi audit.
+- `data/review/retrieval_audit_report.json`: kết quả audit chi tiết.
+- `data/review/retrieval_audit_report.md`: report audit dạng Markdown.
+- `data/review/source_review_decisions.yaml`: quyết định review nguồn.
+- `huit_db/`: Chroma vector DB local.
+
+## Task 1 Đã Xử Lý Gì
+
+Đã thực hiện:
+
+- Lập `document_manifest.yaml` cho toàn bộ nguồn.
+- Bóc tách PDF, DOCX, JSONL.
+- Làm sạch text và tạo manual review queue.
+- Nhận diện cấu trúc QĐ-3344 theo chương, điều, khoản, điểm.
+- Chunk theo loại tài liệu:
+  - legal article/clause cho quy chế.
+  - procedure section cho hướng dẫn học vụ.
+  - form quick-view cho biểu mẫu.
+  - FAQ chunk cho câu hỏi thường gặp.
+- Giữ citation theo định dạng Việt Nam, ví dụ:
 
 ```text
-AIAgentHocVu/
-├── data/
-│   ├── SỔ TAY SV - Bách Khoa - NĂM HỌC 2025-2026.pdf
-│   ├── Sổ tay sinh viên Nguyễn Tất Thành.pdf
-│   ├── faq_hcmut.jsonl
-│   └── faq_nttu.jsonl
-├── src/
-│   ├── data_processor.py
-│   └── retriever.py
-├── scripts/
-│   └── audit_vector_db.py
-├── tests/
-│   └── test_retrieval.py
-├── main.py
-└── requirements.txt
+Quyết định số 3344/QĐ-DCT ngày 05/09/2025, Điều 40, trang 40
 ```
 
-Các thư mục sinh tự động và không commit:
+- Làm sạch các bảng quan trọng trong QĐ-3344:
+  - Điều 18, Bảng 1.
+  - Điều 21, Bảng 2.
+  - Điều 30, Bảng 3.
+  - Điều 30, Bảng 4.
+  - Điều 32, công thức GPA.
+- Tạo form preview cho BM02, BM03, BM04, BM08, BM10, BM11, BM12.
+- Giữ BM09 ở trạng thái pending vì có dấu hiệu domain HUFI cũ.
+- Bỏ QĐ-3230 theo quyết định của user, không dùng cho câu trả lời quy định hiện hành.
+- Giữ QĐ-2658 và QĐ-3297 ở pending, không vector hóa cho tới khi review thủ công.
+- Upsert approved chunks vào ChromaDB.
+- Audit retrieval với 100 câu hỏi, kết quả `100/100`.
 
-- `data/processed/`: text cache sau khi bóc PDF.
-- `hcmut_nttu_db/`: ChromaDB local.
-- `chroma_db/`: DB thử nghiệm cũ, không còn dùng.
+## Chính Sách Nguồn
 
-## Pipeline Task 1.2
-
-Pipeline hiện tại không phụ thuộc hoàn toàn vào Markdown heading nữa, vì PDF thật sinh heading khá nhiễu. Thay vào đó, project dùng rule-based legal chunking:
+Khi hỏi quy định hiện hành, thứ tự ưu tiên là:
 
 ```text
-PDF
--> unstructured hi_res
--> text sạch + giữ bảng dạng Markdown table nếu có
--> bỏ mục lục/header/footer/số trang rác
--> chunk theo PHẦN / CHƯƠNG / MỤC / Điều / 1.1 / 1.1.1
--> tách phụ nếu chunk quá dài
--> enrich metadata
--> embedding BAAI/bge-m3 bằng GPU nếu có
--> ChromaDB local
+QĐ-3344/current official docs > guidance 2026 > form > FAQ
 ```
 
-Metadata mỗi chunk:
+Nguyên tắc:
 
-- `school`: `HCMUT` hoặc `NTTU`.
-- `source`: tên file PDF/FAQ gốc.
-- `category`: nhóm nội dung như `diem_ren_luyen`, `hoc_phi_hoc_bong`, `hoc_vu`.
-- `section_heading`: tiêu đề gần nhất của chunk.
-- `hierarchy_path`: đường dẫn cấu trúc cha.
-- `chunk_type`: `part`, `section`, `article`, `numbered`, `topic`, `faq`, ...
-- `chunk_id`: mã chunk.
+- QĐ-3344 là nguồn luật hiện hành cao nhất trong corpus HUIT.
+- FAQ chỉ hỗ trợ bắt intent và diễn giải, không thay nguồn pháp lý.
+- Form chỉ dùng để gợi ý biểu mẫu, không thay thế điều khoản quy định.
+- Nguồn pending/discarded không được dùng cho câu trả lời quy định hiện hành.
+- Nếu sau này bổ sung dữ liệu, chỉ cần chạy lại pipeline/upsert theo `content_hash`, không cần huấn luyện lại model từ đầu.
 
-## GPU và HuggingFace
+## Pipeline Task 1
 
-Project đọc token từ `.env` local. File này đã nằm trong `.gitignore`.
-
-PyTorch CUDA hiện đã được cài trong `venv`:
-
-```text
-torch 2.11.0+cu128
-GPU: NVIDIA GeForce RTX 5050 Laptop GPU
-```
-
-Kiểm tra GPU:
-
-```powershell
-.\venv\Scripts\python.exe -c "import torch; print(torch.__version__); print(torch.cuda.is_available()); print(torch.cuda.get_device_name(0))"
-```
-
-## Chạy build lại từ đầu
-
-Nên chạy bằng PowerShell tại thư mục project:
-
-```powershell
-chcp 65001
-$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::UTF8
-$env:EMBEDDING_DEVICE="cuda"
-.\venv\Scripts\python.exe main.py --reset --force-markdown
-```
-
-Ý nghĩa:
-
-- `--reset`: xóa `hcmut_nttu_db/` cũ trước khi tạo lại.
-- `--force-markdown`: ép bóc PDF lại, không dùng cache trong `data/processed/`.
-- `EMBEDDING_DEVICE=cuda`: ép embedding chạy GPU.
-
-Nếu chỉ muốn xử lý một trường:
-
-```powershell
-.\venv\Scripts\python.exe main.py --reset --force-markdown --pdf "data\SỔ TAY SV - Bách Khoa - NĂM HỌC 2025-2026.pdf"
-```
-
-## Audit chất lượng DB
-
-Sau khi build xong, kiểm tra số lượng chunk và keyword:
-
-```powershell
-.\venv\Scripts\python.exe scripts\audit_vector_db.py --keyword "rèn luyện"
-```
-
-Lọc riêng HCMUT:
-
-```powershell
-.\venv\Scripts\python.exe scripts\audit_vector_db.py --keyword "rèn luyện" --school HCMUT
-```
-
-Kỳ vọng tốt:
-
-- Tổng số chunks phải lớn hơn nhiều so với bản lỗi cũ 18 chunks.
-- `Chunks thuộc MỤC LỤC` nên bằng 0.
-- Keyword `rèn luyện` phải có chunk category `diem_ren_luyen`.
-- Không có quá nhiều chunk dài hơn 2600 ký tự.
-
-## Test retrieval
-
-Hybrid search là mặc định, kết hợp BM25 + Chroma vector search:
-
-```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --school HCMUT --k 5
-```
-
-So sánh với vector search thuần:
-
-```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py --query "Việc đánh giá điểm rèn luyện dựa trên bao nhiêu tiêu chí?" --school HCMUT --k 5 --vector-only
-```
-
-## Chạy Task 1.2 với dữ liệu HUIT
-
-Dữ liệu HUIT đặt tại `data/raw/HUIT/`. Pipeline sẽ:
-
-- đọc các PDF trong thư mục HUIT;
-- ưu tiên dùng file `_extracted.txt` cùng tên nếu đã có;
-- nếu `_extracted.txt` rỗng, thử fallback bóc text bằng `pypdf` và cache vào `data/processed/huit/`;
-- nạp `faq_huit.jsonl`;
-- lưu Chroma DB riêng tại `data/huit_db/`.
-
-Build lại DB HUIT:
-
-```powershell
-chcp 65001
-$env:PYTHONIOENCODING="utf-8"
-$env:EMBEDDING_DEVICE="cpu"
-.\venv\Scripts\python.exe main.py --school HUIT --reset
-```
-
-Nếu 3 PDF scan của HUIT bị rỗng text, chạy OCR trước:
+Chạy trong PowerShell từ project root:
 
 ```powershell
 $env:PYTHONIOENCODING="utf-8"
-.\venv\Scripts\python.exe scripts\ocr_huit_pdfs.py --scale 2
-.\venv\Scripts\python.exe main.py --school HUIT --reset
 ```
 
-Audit nhanh DB HUIT:
+### 1. Extract Raw Documents
 
 ```powershell
-.\venv\Scripts\python.exe scripts\audit_vector_db.py --school HUIT --keyword "cảnh báo học vụ" --limit 3
+.\venv\Scripts\python.exe -X utf8 scripts\extract_raw_documents.py
 ```
 
-Test retrieval HUIT:
+Output:
+
+```text
+data/processed_raw/
+data/processed_raw/_extraction_summary.json
+```
+
+### 2. Clean Raw Documents
 
 ```powershell
-.\venv\Scripts\python.exe tests\test_retrieval.py --school HUIT --query "Sinh viên bị cảnh báo học vụ mấy lần thì bị buộc thôi học?" --k 3
+.\venv\Scripts\python.exe -X utf8 scripts\clean_raw_documents.py
 ```
 
-## Ghi chú
+Output:
 
-- GPU giúp embedding nhanh hơn, nhưng độ chính xác phụ thuộc chủ yếu vào chunking và metadata.
-- Mục lục không được index vào Vector DB vì dễ gây nhiễu retrieval.
-- FAQ JSONL được đưa vào DB như các chunk riêng để tăng khả năng trả lời các câu hỏi phổ biến.
+```text
+data/processed_clean/
+data/review/manual_review_items.jsonl
+```
+
+### 3. Structure Documents
+
+```powershell
+.\venv\Scripts\python.exe -X utf8 scripts\structure_documents.py
+```
+
+Output:
+
+```text
+data/intermediate/structured_documents.jsonl
+data/intermediate/structure_summary.json
+```
+
+### 4. Build Chunks
+
+```powershell
+.\venv\Scripts\python.exe -X utf8 scripts\build_chunks.py
+```
+
+Output:
+
+```text
+data/processed_chunks.jsonl
+data/processed_chunks_enriched.jsonl
+data/intermediate/chunk_summary.json
+```
+
+### 5. Generate Form Previews
+
+```powershell
+.\venv\Scripts\python.exe -X utf8 scripts\generate_form_previews.py
+```
+
+Output:
+
+```text
+data/forms_preview/
+data/review/form_review_summary.json
+```
+
+### 6. Apply Review Gate
+
+```powershell
+.\venv\Scripts\python.exe -X utf8 scripts\apply_review_gate.py
+```
+
+Output:
+
+```text
+data/review/approved_chunks.jsonl
+data/review/pending_chunks.jsonl
+data/review/rejected_or_blocked_chunks.jsonl
+data/review/review_summary.json
+```
+
+### 7. Upsert Vector DB
+
+Lần đầu có thể cần model từ HuggingFace. Sau khi model đã có cache, có thể chạy offline:
+
+```powershell
+$env:HF_HUB_OFFLINE="1"
+$env:TRANSFORMERS_OFFLINE="1"
+.\venv\Scripts\python.exe -X utf8 scripts\upsert_vector_db.py --reset
+```
+
+Output:
+
+```text
+huit_db/
+data/intermediate/vector_upsert_summary.json
+```
+
+### 8. Audit Retrieval
+
+```powershell
+$env:HF_HUB_OFFLINE="1"
+$env:TRANSFORMERS_OFFLINE="1"
+.\venv\Scripts\python.exe -X utf8 scripts\audit_retrieval.py
+```
+
+Output:
+
+```text
+data/review/retrieval_audit_report.json
+data/review/retrieval_audit_report.md
+```
+
+## Kiểm Tra Nhanh Task 1
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+.\venv\Scripts\python.exe -m compileall scripts src tests
+.\venv\Scripts\python.exe -X utf8 tests\test_retriever.py
+```
+
+Kiểm tra audit summary:
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+.\venv\Scripts\python.exe -c "import json; d=json.load(open('data/review/retrieval_audit_report.json', encoding='utf-8')); print({k:d[k] for k in ['total_cases','passed_cases','failed_cases','active_cases','pending_source_cases','discarded_source_cases','collection_count']})"
+```
+
+Kết quả mong đợi:
+
+```text
+total_cases: 100
+passed_cases: 100
+failed_cases: 0
+active_cases: 96
+pending_source_cases: 3
+discarded_source_cases: 1
+collection_count: 141
+```
+
+## Retriever API
+
+Retriever chính nằm tại `src/retriever.py`.
+
+Ví dụ:
+
+```python
+from src.retriever import search_academic_policy
+
+results = search_academic_policy(
+    "Xếp loại tốt nghiệp có bị giảm nếu học lại quá 5% tín chỉ không?",
+    intent="current_policy",
+    k=3,
+)
+```
+
+Kết quả trả về gồm:
+
+- `chunk_id`
+- `document_id`
+- `source_type`
+- `citation`
+- `text`
+- `score`
+- metadata liên quan đến điều/khoản/biểu mẫu.
+
+## Trạng Thái Nguồn Pending Và Discarded
+
+Pending:
+
+- BM09: có dấu hiệu domain HUFI cũ, cần xác nhận bản HUIT mới.
+- QĐ-2658: PDF scan, cần review thủ công trước khi vector hóa.
+- QĐ-3297: PDF scan, cần review thủ công trước khi vector hóa.
+
+Discarded:
+
+- QĐ-3230: đã bỏ theo quyết định user, không xử lý tiếp và không dùng cho câu hỏi quy định hiện hành.
+
+## Task 2A - Rule-Based Multi-Agent Scaffold
+
+Stage 2A chưa gọi LLM thật. Code được tổ chức như core module để CLI, Python API hoặc Task 3 API Gateway có thể dùng lại cùng một interface.
+
+### Cấu Trúc
+
+```text
+src/agents/
+  planner.py          # route câu hỏi và clarification
+  retriever_agent.py  # gọi Vector DB Task 1
+  tool_agent.py       # gọi tool interface
+  answering_agent.py  # template answer blocks
+  critic_agent.py     # checklist pháp lý
+  fallback.py         # câu trả lời an toàn
+  orchestrator.py     # run_agent()
+
+src/tools/
+  mock_student_api.py # mock API lịch học, điểm, tốt nghiệp
+
+src/memory/
+  session_memory.py   # short-term session memory
+
+data/mock/
+  students.json
+  schedules.json
+  grades.json
+
+scripts/run_agent_cli.py
+tests/test_agent_stage2a.py
+```
+
+### Interface Chính
+
+```python
+from src.agents import run_agent
+
+response = run_agent(
+    "SV002 còn nợ môn thì có được xét tốt nghiệp không?",
+    session_id="demo",
+)
+
+print(response.to_dict())
+```
+
+Response gồm:
+
+- `answer`
+- `route`
+- `status`
+- `needs_clarification`
+- `clarification_questions`
+- `citations`
+- `tool_results`
+- `retrieval_results`
+- `critic`
+- `session_id`
+- `student_id`
+
+### Mock Sinh Viên
+
+Stage 2A có 5 sinh viên mẫu:
+
+- `SV001`: đủ điều kiện cơ bản.
+- `SV002`: còn nợ môn.
+- `SV003`: GPA tích lũy dưới 2.0.
+- `SV004`: học lại quá 5% tín chỉ, cần cảnh báo Điều 40.
+- `SV005`: thiếu chứng chỉ/điều kiện bổ trợ.
+
+### Chạy CLI
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+$env:HF_HUB_OFFLINE="1"
+$env:TRANSFORMERS_OFFLINE="1"
+.\venv\Scripts\python.exe -X utf8 scripts\run_agent_cli.py "SV002 còn nợ môn thì có được xét tốt nghiệp không?" --json
+```
+
+### Test Stage 2A
+
+```powershell
+$env:PYTHONIOENCODING="utf-8"
+$env:HF_HUB_OFFLINE="1"
+$env:TRANSFORMERS_OFFLINE="1"
+.\venv\Scripts\python.exe -m compileall scripts src tests
+.\venv\Scripts\python.exe -X utf8 tests\test_agent_stage2a.py
+```
+
+Test bao phủ:
+
+- Policy retrieval có citation.
+- Form/procedure retrieval.
+- Tool lịch học.
+- Tool điểm/GPA.
+- Mixed query: dữ liệu cá nhân + QĐ-3344.
+- Clarification loop nhiều lượt khi thiếu MSSV.
+- Fallback khi ngoài phạm vi hoặc không tìm thấy sinh viên.
+
+## Bước Tiếp Theo
+
+- Stage 2B: gắn LLM thật cho Planner/Answering nhưng giữ nguyên interface `run_agent()`.
+- Stage 2C: thay `MockStudentAPI` bằng client gọi API thật của Task 3.
+- Bổ sung long-term/session memory qua database khi Task 3 có SQL Server.

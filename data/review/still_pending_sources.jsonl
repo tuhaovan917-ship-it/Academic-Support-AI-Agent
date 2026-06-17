@@ -1,0 +1,3 @@
+{"document_id":"huit_form_bm09_exam_postponement","decision":"still_pending","reason":"Collected DOCX contains old HUFI portal URL and lacks confirmed HUIT replacement.","can_vectorize":false}
+{"document_id":"huit_qd_2658_student_affairs_2023","decision":"still_pending","reason":"OCR needs page-by-page legal review and correction before chunking.","can_vectorize":false}
+{"document_id":"huit_qd_3297_it_outcomes_2023","decision":"still_pending","reason":"OCR decision metadata and IT-outcome conditions need manual verification.","can_vectorize":false}
