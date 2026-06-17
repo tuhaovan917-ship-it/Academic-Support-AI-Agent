@@ -2,6 +2,35 @@ namespace AcademicSupport.Api.Models;
 
 public sealed record ApiError(string Code, string Message);
 
+public sealed record UserAccount(
+    Guid Id,
+    string FullName,
+    string Email,
+    string StudentId,
+    DateTimeOffset CreatedAt);
+
+public sealed record AuthUser(
+    Guid Id,
+    string FullName,
+    string Email,
+    string StudentId);
+
+public sealed record RegisterRequest(
+    string FullName,
+    string Email,
+    string Password,
+    string? StudentId);
+
+public sealed record LoginRequest(
+    string Email,
+    string Password,
+    bool RememberMe);
+
+public sealed record AuthResponse(
+    string AccessToken,
+    AuthUser User,
+    Student Student);
+
 public sealed record Student(
     string Id,
     string FullName,
@@ -82,4 +111,10 @@ public sealed record ChatResponse(
     ChatMessage UserMessage,
     ChatMessage AssistantMessage,
     IReadOnlyList<ChatCitation> Citations,
-    IReadOnlyList<ChatCard> Cards);
+    IReadOnlyList<ChatCard> Cards,
+    string Status = "answered",
+    string Route = "agent",
+    bool NeedsClarification = false,
+    IReadOnlyList<string>? ClarificationQuestions = null,
+    object? Error = null,
+    object? Agent = null);

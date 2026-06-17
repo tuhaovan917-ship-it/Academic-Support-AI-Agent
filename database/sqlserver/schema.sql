@@ -1,10 +1,10 @@
-IF DB_ID(N'AcademicSupportMock') IS NULL
+IF DB_ID(N'AcademicSupportDb') IS NULL
 BEGIN
-    CREATE DATABASE AcademicSupportMock;
+    CREATE DATABASE AcademicSupportDb;
 END;
 GO
 
-USE AcademicSupportMock;
+USE AcademicSupportDb;
 GO
 
 CREATE TABLE dbo.Students (
@@ -16,6 +16,29 @@ CREATE TABLE dbo.Students (
     IntakeYear INT NOT NULL,
     Email NVARCHAR(160) NOT NULL UNIQUE,
     CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET()
+);
+GO
+
+CREATE TABLE dbo.UserAccounts (
+    UserId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    StudentId NVARCHAR(20) NOT NULL,
+    FullName NVARCHAR(120) NOT NULL,
+    Email NVARCHAR(160) NOT NULL UNIQUE,
+    PasswordHash NVARCHAR(128) NOT NULL,
+    CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+    LastLoginAt DATETIMEOFFSET NULL,
+    CONSTRAINT FK_UserAccounts_Students FOREIGN KEY (StudentId) REFERENCES dbo.Students(StudentId)
+);
+GO
+
+CREATE TABLE dbo.UserSessions (
+    AuthSessionId UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID() PRIMARY KEY,
+    UserId UNIQUEIDENTIFIER NOT NULL,
+    AccessTokenHash NVARCHAR(128) NOT NULL,
+    ExpiresAt DATETIMEOFFSET NOT NULL,
+    CreatedAt DATETIMEOFFSET NOT NULL DEFAULT SYSDATETIMEOFFSET(),
+    RevokedAt DATETIMEOFFSET NULL,
+    CONSTRAINT FK_UserSessions_UserAccounts FOREIGN KEY (UserId) REFERENCES dbo.UserAccounts(UserId)
 );
 GO
 
@@ -104,6 +127,8 @@ CREATE TABLE dbo.ApiToolLogs (
 GO
 
 CREATE INDEX IX_Enrollments_Student_Semester ON dbo.Enrollments(StudentId, Semester);
+CREATE INDEX IX_UserAccounts_Student ON dbo.UserAccounts(StudentId);
+CREATE INDEX IX_UserSessions_User ON dbo.UserSessions(UserId, ExpiresAt);
 CREATE INDEX IX_Schedules_Student ON dbo.Schedules(StudentId, DayOfWeek, StartPeriod);
 CREATE INDEX IX_Grades_Student_Semester ON dbo.Grades(StudentId, Semester);
 CREATE INDEX IX_ChatSessions_Student ON dbo.ChatSessions(StudentId, UpdatedAt DESC);

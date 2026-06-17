@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj": {}
+    "D:\\Projects\\Academic-Support-AI-Agent\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj": {}
   },
   "projects": {
-    "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj": {
+    "D:\\Projects\\Academic-Support-AI-Agent\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj",
+        "projectUniqueName": "D:\\Projects\\Academic-Support-AI-Agent\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj",
         "projectName": "AcademicSupport.Api",
-        "projectPath": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj",
+        "projectPath": "D:\\Projects\\Academic-Support-AI-Agent\\backend\\AcademicSupport.Api\\AcademicSupport.Api.csproj",
         "packagesPath": "C:\\Users\\Danh\\.nuget\\packages\\",
-        "outputPath": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\obj\\",
+        "outputPath": "D:\\Projects\\Academic-Support-AI-Agent\\backend\\AcademicSupport.Api\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\Danh\\AppData\\Roaming\\NuGet\\NuGet.Config",
@@ -44,6 +44,16 @@
       "frameworks": {
         "net8.0": {
           "targetAlias": "net8.0",
+          "dependencies": {
+            "Microsoft.Data.SqlClient": {
+              "target": "Package",
+              "version": "[5.2.2, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[6.6.2, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
