@@ -1,0 +1,24 @@
+{
+  "answer": "Mình chưa đủ căn cứ trong dữ liệu đã duyệt để trả lời câu này. Bạn nên liên hệ Phòng Đào tạo hoặc chuyên viên học vụ để được xác nhận chính thức.",
+  "status": "fallback",
+  "route": "fallback",
+  "session_id": "demo-session-fallback",
+  "student_id": null,
+  "needs_clarification": false,
+  "clarification_questions": [],
+  "citations": [],
+  "error": {
+    "code": "ERR_PENDING_OR_DISCARDED_SOURCE",
+    "message": "Nguồn liên quan đang pending hoặc đã bị loại khỏi nguồn hiện hành.",
+    "details": {
+      "warnings": [
+        "missing_or_blocked_source:pending_or_discarded"
+      ],
+      "errors": []
+    }
+  },
+  "metadata": {
+    "service": "agent_service",
+    "response_mode": "compact"
+  }
+}

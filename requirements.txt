@@ -8,6 +8,7 @@ langchain-huggingface
 langchain-text-splitters
 langgraph
 python-dotenv
+openai
 rank-bm25
 sentence-transformers
 tqdm

@@ -1,0 +1,11 @@
+{
+  "query": "SV004 có bị giảm xếp loại tốt nghiệp không?",
+  "session_id": "demo-session-001",
+  "student_id": null,
+  "include_debug": false,
+  "include_retrieval": false,
+  "include_tool_results": true,
+  "metadata": {
+    "client": "task3-backend"
+  }
+}

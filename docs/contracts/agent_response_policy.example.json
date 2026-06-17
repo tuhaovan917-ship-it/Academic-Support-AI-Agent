@@ -1,0 +1,16 @@
+{
+  "answer": "Theo bảng quy đổi thang điểm tại Điều 30, điểm chữ A tương ứng với khoảng điểm hệ 10 từ 8.5 đến 10.0, và điểm hệ 4 là 4.0.",
+  "status": "answered",
+  "route": "policy_retrieval",
+  "session_id": "demo-session-001",
+  "student_id": null,
+  "needs_clarification": false,
+  "clarification_questions": [],
+  "citations": [
+    "Quyết định số 3344/QĐ-DCT ngày 05/09/2025, Điều 30, Khoản 4, trang 29"
+  ],
+  "metadata": {
+    "service": "agent_service",
+    "response_mode": "compact"
+  }
+}
