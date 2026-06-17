@@ -2,7 +2,7 @@
   <button type="button" aria-label="Mở menu">
     <span class="material-symbols-outlined">menu</span>
   </button>
-  <span>HUIT AI</span>
+  <span>EduMind</span>
   <button type="button" aria-label="Hội thoại mới" (click)="startNewChat()">
     <span class="material-symbols-outlined">add</span>
   </button>
@@ -14,37 +14,32 @@
       <span class="material-symbols-outlined filled">neurology</span>
     </div>
     <div>
-      <h1>HUIT AI</h1>
+      <h1>EduMind</h1>
       <p>Sẵn sàng hỗ trợ</p>
     </div>
   </div>
 
   <div class="sidebar-scroll">
     <div class="section-label">Hội thoại</div>
-    <button type="button" class="nav-link active" (click)="startNewChat()">
+    <button type="button" class="nav-link" [class.active]="!sessionId" (click)="startNewChat()">
       <span class="material-symbols-outlined">add_comment</span>
       <span>Hội thoại mới</span>
     </button>
-    <button type="button" class="nav-link conversation-link" (click)="askRegistration()">
-      <span class="material-symbols-outlined">edit_note</span>
-      <span>Đăng ký học phần</span>
-    </button>
-    <button type="button" class="nav-link conversation-link" (click)="askGrades()">
-      <span class="material-symbols-outlined">grading</span>
-      <span>Điểm và môn nợ</span>
-    </button>
-    <button type="button" class="nav-link conversation-link" (click)="askSchedule()">
-      <span class="material-symbols-outlined">calendar_month</span>
-      <span>Lịch học tuần này</span>
+    <button
+      type="button"
+      class="nav-link conversation-link"
+      *ngFor="let session of sessions; trackBy: trackBySessionId"
+      [class.active]="session.id === sessionId"
+      (click)="openSession(session)"
+      [title]="session.title"
+    >
+      <span class="material-symbols-outlined">chat</span>
+      <span>{{ session.title }}</span>
     </button>
 
   </div>
 
   <div class="sidebar-footer">
-    <button type="button" class="clear-button" (click)="startNewChat()">
-      <span class="material-symbols-outlined">delete</span>
-      Xóa lịch sử
-    </button>
     <button type="button" class="footer-link">
       <span class="material-symbols-outlined">account_circle</span>
       Tài khoản
@@ -52,7 +47,7 @@
   </div>
 </aside>
 
-<main class="chat-main">
+<main class="chat-main" [class.is-empty-chat]="isEmptyChat">
   <header class="desktop-topbar">
     <div class="title-wrap">
       <h2>Tư vấn học vụ</h2>
@@ -72,94 +67,9 @@
         {{ errorMessage || 'Bạn vẫn có thể xem giao diện và nhập tiếng Việt. Chạy backend để nhận phản hồi từ API.' }}
       </p>
 
-      <ng-container *ngIf="messages.length === 0">
-        <div class="exchange">
-          <div class="user-message">
-            <div class="bubble">Cho em xem lịch học tuần này được không?</div>
-          </div>
-          <div class="assistant-message">
-            <div class="avatar">
-              <span class="material-symbols-outlined filled">neurology</span>
-            </div>
-            <div class="assistant-body prose">
-              <p>Được chứ. Khi bạn hỏi lịch học, hệ thống sẽ gọi API thời khóa biểu và hiển thị kết quả ngay trong hội thoại.</p>
-              <div class="table-card">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Thứ</th>
-                      <th>Tiết</th>
-                      <th>Môn học</th>
-                      <th>Phòng</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Thứ 2</td>
-                      <td>1 - 3</td>
-                      <td>Lập trình Web</td>
-                      <td>B.09.02</td>
-                    </tr>
-                    <tr>
-                      <td>Thứ 4</td>
-                      <td>4 - 6</td>
-                      <td>Cơ sở dữ liệu</td>
-                      <td>C.05.01</td>
-                    </tr>
-                    <tr>
-                      <td>Thứ 6</td>
-                      <td>7 - 9</td>
-                      <td>Tiếng Anh 3</td>
-                      <td>A.03.04</td>
-                    </tr>
-                    <tr>
-                      <td>Thứ 7</td>
-                      <td>2 - 4</td>
-                      <td>Giáo dục thể chất</td>
-                      <td>Nhà đa năng</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="response-actions">
-                <button type="button" title="Sao chép">
-                  <span class="material-symbols-outlined">content_copy</span>
-                </button>
-                <button type="button" title="Hữu ích">
-                  <span class="material-symbols-outlined">thumb_up</span>
-                </button>
-                <button type="button" title="Chưa đúng">
-                  <span class="material-symbols-outlined">thumb_down</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="exchange">
-          <div class="user-message">
-            <div class="bubble">Nếu em bị F một môn thì có cần học lại không?</div>
-          </div>
-          <div class="assistant-message">
-            <div class="avatar">
-              <span class="material-symbols-outlined filled">neurology</span>
-            </div>
-            <div class="assistant-body prose">
-              <p><strong>Có.</strong> Trợ lý sẽ kiểm tra bảng điểm, đánh dấu môn cần học lại và tính GPA tạm thời từ dữ liệu học vụ.</p>
-              <p>Khi nối RAG, câu trả lời sẽ kèm căn cứ từ quy chế học vụ để sinh viên dễ đối chiếu.</p>
-              <div class="response-actions bordered">
-                <button type="button" title="Sao chép">
-                  <span class="material-symbols-outlined">content_copy</span>
-                </button>
-                <button type="button" title="Hữu ích">
-                  <span class="material-symbols-outlined">thumb_up</span>
-                </button>
-                <button type="button" title="Chưa đúng">
-                  <span class="material-symbols-outlined">thumb_down</span>
-                </button>
-              </div>
-            </div>
-          </div>
+      <ng-container *ngIf="isEmptyChat">
+        <div class="empty-state">
+          <h3>Bạn đang cần hỗ trợ gì?</h3>
         </div>
       </ng-container>
 
@@ -294,7 +204,7 @@
         <input
           name="prompt"
           [(ngModel)]="prompt"
-          placeholder="Nhắn HUIT AI..."
+          placeholder="Nhập yêu cầu của bạn tại đây"
           autocomplete="off"
         >
         <div class="composer-actions">

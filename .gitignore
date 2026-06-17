@@ -1,19 +1,65 @@
-venv/
-__pycache__/
-*.pyc
+# Environment / secrets
 .env
+.env.*
+!.env.example
+!.env.*.example
+
+# Python
+venv/
+.venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+ng-serve*.log
+
+# .NET / Visual Studio
+.vs/
+[Bb]in/
+[Oo]bj/
+TestResults/
+*.user
+*.suo
+*.rsuser
+*.DotSettings.user
+
+# OS / editor
 .DS_Store
+Thumbs.db
+desktop.ini
 ~$*.docx
 
+# Local vector databases
 chroma_db/
 hcmut_nttu_db/
 huit_db/
 
+# Generated data artifacts
 data/archive/
+data/intermediate/
+data/forms_preview/
 data/processed/
 data/processed_raw/
 data/processed_clean/
 data/processed_ocr/
+data/processed_chunks*.jsonl
 
 data/review/*
 !data/review/approved_chunks.jsonl

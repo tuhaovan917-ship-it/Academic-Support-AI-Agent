@@ -157,6 +157,9 @@ p {
 
 .conversation-link span:last-child {
   font-size: 15px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .student-mini {
@@ -318,6 +321,22 @@ p {
   margin: 0 auto;
   max-width: 1000px;
   width: 1000px;
+}
+
+.empty-state {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  min-height: 220px;
+  text-align: center;
+}
+
+.empty-state h3 {
+  color: var(--on-surface);
+  font-family: Geist, Inter, Arial, sans-serif;
+  font-size: 30px;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .exchange {
@@ -554,6 +573,63 @@ tr:last-child td {
   margin: 0 auto;
   max-width: 1000px;
   width: 1000px;
+}
+
+.chat-main.is-empty-chat .chat-history {
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 160px;
+}
+
+.chat-main.is-empty-chat .thread {
+  align-items: center;
+  max-width: 820px;
+  transform: translateY(-72px);
+  width: 100%;
+}
+
+.chat-main.is-empty-chat .composer-wrap {
+  background: transparent;
+  bottom: auto;
+  padding: 0 16px;
+  top: calc(50% + 26px);
+  transform: translateY(-50%);
+}
+
+.chat-main.is-empty-chat .composer-inner {
+  max-width: 800px;
+  position: relative;
+  width: 800px;
+}
+
+.chat-main.is-empty-chat .composer {
+  border-radius: 999px;
+  min-height: 66px;
+}
+
+.chat-main.is-empty-chat .composer input {
+  height: 66px;
+  padding: 0 168px 0 58px;
+}
+
+.chat-main.is-empty-chat .composer-actions {
+  bottom: 13px;
+  left: 16px;
+  right: 12px;
+}
+
+.chat-main.is-empty-chat .prompt-chips {
+  justify-content: center;
+  left: 0;
+  margin: 0;
+  position: absolute;
+  right: 0;
+  top: 94px;
+}
+
+.chat-main.is-empty-chat .disclaimer {
+  display: none;
 }
 
 .prompt-chips {

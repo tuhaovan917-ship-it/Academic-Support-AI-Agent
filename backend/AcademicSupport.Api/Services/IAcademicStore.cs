@@ -20,7 +20,7 @@ public interface IAcademicStore
 
     IReadOnlyList<ChatMessage> GetMessages(Guid sessionId);
 
-    ChatSession EnsureSession(string studentId, Guid? sessionId);
+    ChatSession EnsureSession(string studentId, Guid? sessionId, string? fallbackTitle = null);
 
     ChatMessage AddMessage(Guid sessionId, string role, string content);
 }

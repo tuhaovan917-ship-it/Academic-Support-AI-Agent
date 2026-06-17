@@ -12,7 +12,7 @@ public sealed class MockChatService(IAcademicStore store) : IChatAnswerService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var session = store.EnsureSession(request.StudentId, request.SessionId);
+        var session = store.EnsureSession(request.StudentId, request.SessionId, request.Message.Trim());
         var userMessage = store.AddMessage(session.Id, "user", request.Message.Trim());
         var normalized = NormalizeSearchText(request.Message);
 

@@ -106,7 +106,7 @@ public sealed class MockAcademicStore : IAcademicStore
         var session = new ChatSession(
             Guid.NewGuid(),
             studentId,
-            string.IsNullOrWhiteSpace(title) ? "Hỏi đáp học vụ" : title.Trim(),
+            NormalizeSessionTitle(title),
             now,
             now);
         _sessions.Add(session);
@@ -130,7 +130,7 @@ public sealed class MockAcademicStore : IAcademicStore
             .OrderBy(message => message.CreatedAt)
             .ToList();
 
-    public ChatSession EnsureSession(string studentId, Guid? sessionId)
+    public ChatSession EnsureSession(string studentId, Guid? sessionId, string? fallbackTitle = null)
     {
         if (sessionId is not null)
         {
@@ -141,7 +141,7 @@ public sealed class MockAcademicStore : IAcademicStore
             }
         }
 
-        return CreateSession(studentId, "Hỏi đáp học vụ");
+        return CreateSession(studentId, fallbackTitle);
     }
 
     public ChatMessage AddMessage(Guid sessionId, string role, string content)
@@ -157,5 +157,22 @@ public sealed class MockAcademicStore : IAcademicStore
         }
 
         return message;
+    }
+
+    private static string NormalizeSessionTitle(string? title)
+    {
+        const int maxLength = 60;
+        var cleanTitle = string.Join(" ", (title ?? string.Empty).Trim().Split(
+            ' ',
+            StringSplitOptions.RemoveEmptyEntries));
+
+        if (string.IsNullOrWhiteSpace(cleanTitle))
+        {
+            return "Hội thoại mới";
+        }
+
+        return cleanTitle.Length <= maxLength
+            ? cleanTitle
+            : cleanTitle[..maxLength].TrimEnd() + "...";
     }
 }

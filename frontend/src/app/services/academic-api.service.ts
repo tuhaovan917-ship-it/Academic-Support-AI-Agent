@@ -5,8 +5,10 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AcademicSummary,
+  ChatMessage,
   ChatRequest,
   ChatResponse,
+  ChatSession,
   GradeRecord,
   ScheduleItem,
   Student,
@@ -32,6 +34,15 @@ export class AcademicApiService {
 
   getAcademicSummary(studentId: string): Observable<AcademicSummary> {
     return this.http.get<AcademicSummary>(`${this.apiBaseUrl}/students/${studentId}/academic-summary`);
+  }
+
+  getChatSessions(studentId?: string): Observable<ChatSession[]> {
+    const suffix = studentId ? `?studentId=${encodeURIComponent(studentId)}` : '';
+    return this.http.get<ChatSession[]>(`${this.apiBaseUrl}/chat/sessions${suffix}`);
+  }
+
+  getChatMessages(sessionId: string): Observable<ChatMessage[]> {
+    return this.http.get<ChatMessage[]>(`${this.apiBaseUrl}/chat/sessions/${sessionId}/messages`);
   }
 
   sendChat(request: ChatRequest): Observable<ChatResponse> {

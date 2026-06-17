@@ -54,6 +54,14 @@ export interface ChatMessage {
   createdAt: string;
 }
 
+export interface ChatSession {
+  id: string;
+  studentId: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ChatCitation {
   source: string;
   title: string;

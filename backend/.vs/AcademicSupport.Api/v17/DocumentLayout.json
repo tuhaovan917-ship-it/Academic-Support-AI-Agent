@@ -3,16 +3,16 @@
   "WorkspaceRootPath": "D:\\Intern-Projects\\ChatBotUni\\backend\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\services\\mockacademicstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\services\\mockacademicstore.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\models\\academicmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\models\\academicmodels.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|solutionrelative:academicsupport.api\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{643BEE50-014A-4A5B-A160-865BD60B1598}|AcademicSupport.Api\\AcademicSupport.Api.csproj|d:\\intern-projects\\chatbotuni\\backend\\academicsupport.api\\appsettings.development.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -38,11 +38,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "MockAcademicStore.cs",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Services\\MockAcademicStore.cs",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\Services\\MockAcademicStore.cs",
@@ -55,7 +55,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "AcademicModels.cs",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Models\\AcademicModels.cs",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\Models\\AcademicModels.cs",
@@ -63,8 +63,7 @@
               "RelativeToolTip": "AcademicSupport.Api\\Models\\AcademicModels.cs",
               "ViewState": "AQIAAA8AAAAAAAAAAAAYwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T08:10:43.57Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T08:10:43.57Z"
             },
             {
               "$type": "Document",
@@ -76,8 +75,7 @@
               "RelativeToolTip": "AcademicSupport.Api\\appsettings.Development.json",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAsAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-14T04:05:36.181Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T04:05:36.181Z"
             },
             {
               "$type": "Document",
@@ -89,8 +87,7 @@
               "RelativeToolTip": "AcademicSupport.Api\\AcademicSupport.Api.http",
               "ViewState": "AQIAAAUAAAAAAAAAAAAAwAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003502|",
-              "WhenOpened": "2026-06-14T03:20:51.104Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T03:20:51.104Z"
             },
             {
               "$type": "Document",
@@ -102,8 +99,7 @@
               "RelativeToolTip": "AcademicSupport.Api\\appsettings.json",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2026-06-14T03:20:45.663Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T03:20:45.663Z"
             },
             {
               "$type": "Document",
@@ -115,18 +111,17 @@
               "RelativeToolTip": "AcademicSupport.Api\\obj\\Debug\\net8.0\\.NETCoreApp,Version=v8.0.AssemblyAttributes.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAMAAAALAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-06-14T03:14:42.448Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-06-14T03:14:42.448Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 0,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Program.cs",
               "RelativeDocumentMoniker": "AcademicSupport.Api\\Program.cs",
               "ToolTip": "D:\\Intern-Projects\\ChatBotUni\\backend\\AcademicSupport.Api\\Program.cs",
               "RelativeToolTip": "AcademicSupport.Api\\Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAoAAAA",
+              "ViewState": "AQIAADkAAAAAAAAAAAAAAGoAAAABAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2026-06-14T03:14:26.801Z",
               "EditorCaption": ""

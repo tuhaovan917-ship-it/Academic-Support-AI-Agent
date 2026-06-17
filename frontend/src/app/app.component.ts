@@ -5,6 +5,7 @@ import {
   ChatCard,
   ChatCitation,
   ChatMessage,
+  ChatSession,
   GradeRecord,
   ScheduleItem,
   Student,
@@ -18,6 +19,7 @@ interface GradesCardData {
 
 @Component({
   selector: 'app-root',
+  standalone: false,
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css'],
 })
@@ -34,6 +36,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
   summary?: AcademicSummary;
 
   messages: ChatMessage[] = [];
+  sessions: ChatSession[] = [];
   pendingUserMessage?: ChatMessage;
   citations: ChatCitation[] = [];
   cards: ChatCard[] = [];
@@ -45,9 +48,9 @@ export class AppComponent implements OnInit, AfterViewChecked {
   private shouldScrollToBottom = false;
 
   readonly quickPrompts = [
-    'Tóm tắt câu trả lời này',
-    'Giải thích dễ hiểu hơn',
-    'Cần gặp phòng đào tạo khi nào?',
+    'Đăng ký học phần',
+    'Điểm và môn nợ',
+    'Lịch học tuần này',
   ];
 
   private readonly fallbackStudent: Student = {
@@ -61,6 +64,10 @@ export class AppComponent implements OnInit, AfterViewChecked {
   };
 
   constructor(private readonly api: AcademicApiService) {}
+
+  get isEmptyChat(): boolean {
+    return !this.sessionId && this.messages.length === 0 && !this.pendingUserMessage && !this.isSending;
+  }
 
   ngOnInit(): void {
     this.api.getStudents().subscribe({
@@ -92,12 +99,14 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.selectedStudentId = studentId;
     this.selectedStudent = this.students.find((student) => student.id === studentId);
     this.startNewChat();
+    this.sessions = [];
     this.errorMessage = '';
 
     if (!this.isBackendAvailable) {
       return;
     }
 
+    this.loadSessions();
     this.isLoadingStudent = true;
     this.api.getSchedule(studentId).subscribe({
       next: (schedule) => (this.schedule = schedule),
@@ -128,6 +137,26 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.prompt = '';
     this.errorMessage = '';
     this.queueScrollToBottom();
+  }
+
+  openSession(session: ChatSession): void {
+    this.sessionId = session.id;
+    this.pendingUserMessage = undefined;
+    this.cards = [];
+    this.citations = [];
+    this.errorMessage = '';
+
+    if (!this.isBackendAvailable) {
+      return;
+    }
+
+    this.api.getChatMessages(session.id).subscribe({
+      next: (messages) => {
+        this.messages = messages;
+        this.queueScrollToBottom();
+      },
+      error: () => this.handleBackendLost('Không tải được lịch sử hội thoại.'),
+    });
   }
 
   askSchedule(): void {
@@ -188,6 +217,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
           this.citations = response.citations;
           this.cards = response.cards;
           this.isSending = false;
+          this.loadSessions();
           this.queueScrollToBottom();
         },
         error: () => {
@@ -218,6 +248,21 @@ export class AppComponent implements OnInit, AfterViewChecked {
     return message.id;
   }
 
+  trackBySessionId(_: number, session: ChatSession): string {
+    return session.id;
+  }
+
+  private loadSessions(): void {
+    if (!this.selectedStudentId || !this.isBackendAvailable) {
+      return;
+    }
+
+    this.api.getChatSessions(this.selectedStudentId).subscribe({
+      next: (sessions) => (this.sessions = sessions),
+      error: () => this.handleBackendLost('Không tải được danh sách hội thoại.'),
+    });
+  }
+
   private useOfflinePreview(): void {
     this.isBackendAvailable = false;
     this.isLoadingStudent = false;
@@ -228,6 +273,7 @@ export class AppComponent implements OnInit, AfterViewChecked {
     this.schedule = [];
     this.grades = [];
     this.summary = undefined;
+    this.sessions = [];
   }
 
   private handleBackendLost(message: string): void {
@@ -237,8 +283,25 @@ export class AppComponent implements OnInit, AfterViewChecked {
 
   private addLocalOfflineReply(message: string): void {
     const sessionId = this.sessionId ?? crypto.randomUUID();
+    const isNewSession = !this.sessionId;
     this.sessionId = sessionId;
     const now = new Date().toISOString();
+    if (isNewSession) {
+      this.sessions = [
+        {
+          id: sessionId,
+          studentId: this.selectedStudentId,
+          title: this.toSessionTitle(message),
+          createdAt: now,
+          updatedAt: now,
+        },
+        ...this.sessions,
+      ];
+    } else {
+      this.sessions = this.sessions.map((session) =>
+        session.id === sessionId ? { ...session, updatedAt: now } : session
+      );
+    }
     this.messages = [
       ...this.messages,
       {
@@ -265,6 +328,11 @@ export class AppComponent implements OnInit, AfterViewChecked {
   private queueScrollToBottom(): void {
     this.shouldScrollToBottom = true;
     setTimeout(() => this.scrollToBottom(), 0);
+  }
+
+  private toSessionTitle(message: string): string {
+    const title = message.trim().replace(/\s+/g, ' ');
+    return title.length <= 60 ? title : `${title.slice(0, 60).trimEnd()}...`;
   }
 
   private scrollToBottom(): void {
